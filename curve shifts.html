@@ -1,0 +1,3600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Supply and Demand with Consumer Tax and Quota</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+.container {
+  position: relative;
+  width: 1000px;
+}
+svg {
+  width: 850px;
+  height: 600px;
+  background: white;
+  border-radius: 8px;
+}
+.dot {}
+text.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+.legend {
+  position: absolute;
+  top: 20px;
+  right: -100px;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+}
+.legend div {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+.legend-line {
+  display: inline-block;
+  width: 30px;
+  height: 3px;
+  margin-right: 5px;
+}
+.legend-pattern svg {
+  width: 30px;
+  height: 20px;
+  margin-right: 5px;
+  border:1px solid #ccc;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <svg id="chart" viewBox="0 0 850 600"></svg>
+    <div class="legend">
+        <div><span class="legend-line" style="background:#2563eb;"></span>Demand</div>
+        <div><span class="legend-line" style="background:#16a34a;"></span>Supply</div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-producer-externality-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(249, 115, 22, 0.8)" stroke-width="2"/>
+                    </pattern>
+                </defs>
+                <rect width="30" height="20" fill="url(#pattern-producer-externality-legend)"/>
+            </svg>
+            <span id="producerExternalityLegendText">Producer Externality</span>
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-consumer-externality-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="8" y2="0" stroke="rgba(249, 115, 22, 0.8)" stroke-width="2"/>
+                </pattern>
+            </defs>
+            <rect width="30" height="20" fill="url(#pattern-consumer-externality-legend)"/>
+            </svg>
+            <span id="consumerExternalityLegendText">Consumer Externality</span>
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-cs-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <line x1="0" y1="0" x2="8" y2="8" stroke="rgba(59,130,246,0.8)" stroke-width="4"/>
+                    </pattern>
+                </defs>
+                <rect width="30" height="20" fill="url(#pattern-cs-legend)"/>
+            </svg>
+            Consumer Surplus
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-ps-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <line x1="0" y1="8" x2="8" y2="0" stroke="rgba(34,197,94,0.8)" stroke-width="4"/>
+                    </pattern>
+                </defs>
+                <rect width="30" height="20" fill="url(#pattern-ps-legend)"/>
+            </svg>
+            Producer Surplus
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <rect width="30" height="20" fill="rgba(239, 68, 68, 0.4)"/>
+            </svg>
+            Deadweight Loss
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <rect width="30" height="20" fill="rgba(34, 197, 94, 0.4)"/>
+            </svg>
+            Producer Rent
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <rect width="30" height="20" fill="rgba(59, 130, 246, 0.4)"/>
+            </svg>
+            Consumer Rent
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-consumer-loss-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <line x1="4" y1="0" x2="4" y2="8" stroke="rgba(59,130,246,0.8)" stroke-width="2"/>
+                        <line x1="0" y1="4" x2="8" y2="4" stroke="rgba(59,130,246,0.8)" stroke-width="2"/>
+                    </pattern>
+                </defs>
+                <rect width="30" height="20" fill="url(#pattern-consumer-loss-legend)"/>
+            </svg>
+            Consumer Loss
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <defs>
+                    <pattern id="pattern-producer-loss-legend" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <line x1="4" y1="0" x2="4" y2="8" stroke="rgba(34,197,94,0.8)" stroke-width="2"/>
+                        <line x1="0" y1="4" x2="8" y2="4" stroke="rgba(34,197,94,0.8)" stroke-width="2"/>
+                    </pattern>
+                </defs>
+                <rect width="30" height="20" fill="url(#pattern-producer-loss-legend)"/>
+            </svg>
+            Producer Loss
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <rect width="30" height="20" fill="rgba(255, 215, 0, 0.6)"/>
+            </svg>
+            Government Revenue
+        </div>
+        <div class="legend-pattern">
+            <svg>
+                <rect width="30" height="20" fill="rgba(139, 69, 19, 0.6)"/>
+            </svg>
+            Government Expense
+        </div>
+        <div>
+            <label id="fixedPriceLabel">
+                <input type="checkbox" id="fixedPriceChk" />
+                <span id="fixedPriceText">Quota Free Trade</span>
+            </label>
+        </div>
+        <div>
+            <label id="fixedPriceAboveLabel">
+                <input type="checkbox" id="fixedPriceAboveChk" />
+                <span id="fixedPriceAboveText">Quota Imposed Trade</span>
+            </label>
+        </div>
+        <div>
+            <label id="openMarketLabel">
+                <input type="checkbox" id="openMarketChk" />
+                <span id="openMarketText">Open Market</span>
+            </label>
+        </div>
+        <div>
+            <label id="producerExternalityLabel">
+                <input type="checkbox" id="producerExternalityChk" />
+                <span id="producerExternalityText">Producer Externality</span>
+            </label>
+        </div>
+        <div>
+            <label id="consumerExternalityLabel">
+                <input type="checkbox" id="consumerExternalityChk" />
+                <span id="consumerExternalityText">Consumer Externality</span>
+            </label>
+        </div>
+        <div>
+            <label id="producerTaxLabel">
+                <input type="checkbox" id="producerTaxChk" />
+                <span id="producerTaxText">Producer Tax</span>
+            </label>
+        </div>
+        <div>
+            <label id="consumerTaxLabel">
+                <input type="checkbox" id="consumerTaxChk" />
+                <span id="consumerTaxText">Consumer Tax</span>
+            </label>
+        </div>
+    </div>
+</div>
+<script>
+const svg = document.getElementById("chart");
+const W = 850, H = 600;
+const M = { left: 100, right: 30, top: 40, bottom: 60 };
+const innerW = W - M.left - M.right;
+const innerH = H - M.top - M.bottom;
+const toSvgX = q => M.left + (q / 100) * innerW;
+const toSvgY = p => M.top + innerH - (p / 100) * innerH;
+let demand = { intercept: 80, slope: -1 };
+let supply = { intercept: 20, slope: 1 };
+let producerExternality = { intercept: 40, slope: 1 };
+let consumerExternality = { intercept: 60, slope: -1 };
+let producerTax = { intercept: 30, slope: 1 };
+let consumerTax = { intercept: 70, slope: -1 };
+// Fixed Price Free Trade
+let fixedPriceEnabled = false;
+let fixedPrice = 50;
+const fixedPriceChk = document.getElementById("fixedPriceChk");
+const fixedPriceText = document.getElementById("fixedPriceText");
+// Fixed Price Imposed Trade
+let fixedPriceAboveEnabled = false;
+let fixedPriceAbove = 70;
+const fixedPriceAboveChk = document.getElementById("fixedPriceAboveChk");
+const fixedPriceAboveText = document.getElementById("fixedPriceAboveText");
+// Open Market
+let openMarketEnabled = false;
+let globalMarketPrice = 30;
+let tariff = 40;
+const openMarketChk = document.getElementById("openMarketChk");
+const openMarketText = document.getElementById("openMarketText");
+// Producer Externality
+let producerExternalityEnabled = false;
+const producerExternalityChk = document.getElementById("producerExternalityChk");
+const producerExternalityText = document.getElementById("producerExternalityText");
+const producerExternalityLegendText = document.getElementById("producerExternalityLegendText");
+// Consumer Externality
+let consumerExternalityEnabled = false;
+const consumerExternalityChk = document.getElementById("consumerExternalityChk");
+const consumerExternalityText = document.getElementById("consumerExternalityText");
+const consumerExternalityLegendText = document.getElementById("consumerExternalityLegendText");
+// Producer Tax
+let producerTaxEnabled = false;
+const producerTaxChk = document.getElementById("producerTaxChk");
+const producerTaxText = document.getElementById("producerTaxText");
+// Consumer Tax
+let consumerTaxEnabled = false;
+const consumerTaxChk = document.getElementById("consumerTaxChk");
+const consumerTaxText = document.getElementById("consumerTaxText");
+// Légende jaune
+const yellowLegendText = document.getElementById("yellowLegendText");
+// Gestion des checkbox exclusives et combinaisons autorisées
+function uncheckAllOthers(currentCheckbox) {
+    const allCheckboxes = [
+        fixedPriceChk,
+        fixedPriceAboveChk,
+        openMarketChk,
+        producerExternalityChk,
+        consumerExternalityChk,
+        producerTaxChk,
+        consumerTaxChk
+    ];
+
+    // Compter le nombre de cases cochées
+    const checkedCount = allCheckboxes.filter(cb => cb.checked).length;
+
+    allCheckboxes.forEach(cb => {
+        if (cb !== currentCheckbox && cb.checked) {
+            // Si plus de deux cases sont cochées, désactiver les cases non autorisées
+            if (checkedCount > 2 || !isAllowedCombination(currentCheckbox, cb)) {
+                cb.checked = false;
+                updateCheckboxState(cb, false);
+            }
+        }
+    });
+}
+
+
+function updateCheckboxState(checkbox, state) {
+    if (checkbox === fixedPriceChk) fixedPriceEnabled = state;
+    else if (checkbox === fixedPriceAboveChk) fixedPriceAboveEnabled = state;
+    else if (checkbox === openMarketChk) openMarketEnabled = state;
+    else if (checkbox === producerExternalityChk) producerExternalityEnabled = state;
+    else if (checkbox === consumerExternalityChk) consumerExternalityEnabled = state;
+    else if (checkbox === producerTaxChk) producerTaxEnabled = state;
+    else if (checkbox === consumerTaxChk) consumerTaxEnabled = state;
+}
+
+function isAllowedCombination(cb1, cb2) {
+    return (
+        (cb1 === fixedPriceChk && cb2 === producerTaxChk) ||
+        (cb1 === producerTaxChk && cb2 === fixedPriceChk) ||
+        (cb1 === fixedPriceChk && cb2 === consumerTaxChk) ||
+        (cb1 === consumerTaxChk && cb2 === fixedPriceChk) ||
+        (cb1 === producerTaxChk && cb2 === producerExternalityChk) ||
+        (cb1 === producerExternalityChk && cb2 === producerTaxChk) ||
+        (cb1 === producerExternalityChk && cb2 === consumerTaxChk) ||
+        (cb1 === consumerTaxChk && cb2 === producerExternalityChk) ||
+        (cb1 === consumerExternalityChk && cb2 === consumerTaxChk) ||
+        (cb1 === consumerTaxChk && cb2 === consumerExternalityChk) ||
+        (cb1 === consumerExternalityChk && cb2 === producerTaxChk) ||
+        (cb1 === producerTaxChk && cb2 === consumerExternalityChk) ||
+        (cb1 === fixedPriceChk && cb2 === producerExternalityChk) ||
+        (cb1 === producerExternalityChk && cb2 === fixedPriceChk) ||
+        (cb1 === fixedPriceAboveChk && cb2 === producerExternalityChk) ||
+        (cb1 === producerExternalityChk && cb2 === fixedPriceAboveChk) ||
+        (cb1 === fixedPriceChk && cb2 === consumerExternalityChk) ||
+        (cb1 === consumerExternalityChk && cb2 === fixedPriceChk) ||
+        (cb1 === fixedPriceAboveChk && cb2 === consumerExternalityChk) ||
+        (cb1 === consumerExternalityChk && cb2 === fixedPriceAboveChk) ||
+        (cb1 === openMarketChk && cb2 === consumerExternalityChk) ||
+        (cb1 === consumerExternalityChk && cb2 === openMarketChk) ||
+        (cb1 === openMarketChk && cb2 === producerExternalityChk) ||
+        (cb1 === producerExternalityChk && cb2 === openMarketChk) ||
+        (cb1 === openMarketChk && cb2 === producerTaxChk) ||
+        (cb1 === producerTaxChk && cb2 === openMarketChk) ||
+        (cb1 === openMarketChk && cb2 === consumerTaxChk) ||
+        (cb1 === consumerTaxChk && cb2 === openMarketChk) ||
+        (cb1 === fixedPriceChk && cb2 === openMarketChk) ||
+        (cb1 === openMarketChk && cb2 === fixedPriceChk) ||
+        (cb1 === fixedPriceAboveChk && cb2 === producerTaxChk) ||
+        (cb1 === producerTaxChk && cb2 === fixedPriceAboveChk) ||
+        (cb1 === fixedPriceAboveChk && cb2 === consumerTaxChk) ||
+        (cb1 === consumerTaxChk && cb2 === fixedPriceAboveChk) ||
+        (cb1 === fixedPriceAboveChk && cb2 === openMarketChk) ||
+        (cb1 === openMarketChk && cb2 === fixedPriceAboveChk)
+    );
+}
+fixedPriceChk.addEventListener("change", () => {
+    fixedPriceEnabled = fixedPriceChk.checked;
+    uncheckAllOthers(fixedPriceChk);
+    render();
+});
+
+fixedPriceAboveChk.addEventListener("change", () => {
+    fixedPriceAboveEnabled = fixedPriceAboveChk.checked;
+    uncheckAllOthers(fixedPriceAboveChk);
+    render();
+});
+
+openMarketChk.addEventListener("change", () => {
+    openMarketEnabled = openMarketChk.checked;
+    uncheckAllOthers(openMarketChk);
+    render();
+});
+
+producerExternalityChk.addEventListener("change", () => {
+    producerExternalityEnabled = producerExternalityChk.checked;
+    uncheckAllOthers(producerExternalityChk);
+    render();
+});
+
+consumerExternalityChk.addEventListener("change", () => {
+    consumerExternalityEnabled = consumerExternalityChk.checked;
+    uncheckAllOthers(consumerExternalityChk);
+    render();
+});
+
+producerTaxChk.addEventListener("change", () => {
+    producerTaxEnabled = producerTaxChk.checked;
+    uncheckAllOthers(producerTaxChk);
+    render();
+});
+
+consumerTaxChk.addEventListener("change", () => {
+    consumerTaxEnabled = consumerTaxChk.checked;
+    uncheckAllOthers(consumerTaxChk);
+    render();
+});
+
+// --- Patterns ---
+const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+// Consumer Surplus
+const patternCS = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternCS.setAttribute("id", "pattern-cs");
+patternCS.setAttribute("width", "8");
+patternCS.setAttribute("height", "8");
+patternCS.setAttribute("patternUnits", "userSpaceOnUse");
+const lineCS = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineCS.setAttribute("x1", "0");
+lineCS.setAttribute("y1", "0");
+lineCS.setAttribute("x2", "8");
+lineCS.setAttribute("y2", "8");
+lineCS.setAttribute("stroke", "rgba(59,130,246,0.8)");
+lineCS.setAttribute("stroke-width", "3");
+patternCS.appendChild(lineCS);
+defs.appendChild(patternCS);
+// Producer Surplus
+const patternPS = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternPS.setAttribute("id", "pattern-ps");
+patternPS.setAttribute("width", "8");
+patternPS.setAttribute("height", "8");
+patternPS.setAttribute("patternUnits", "userSpaceOnUse");
+const linePS = document.createElementNS("http://www.w3.org/2000/svg", "line");
+linePS.setAttribute("x1", "0");
+linePS.setAttribute("y1", "8");
+linePS.setAttribute("x2", "8");
+linePS.setAttribute("y2", "0");
+linePS.setAttribute("stroke", "rgba(34,197,94,0.8)");
+linePS.setAttribute("stroke-width", "3");
+patternPS.appendChild(linePS);
+defs.appendChild(patternPS);
+// Consumer Loss
+const patternConsumerLoss = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternConsumerLoss.setAttribute("id", "pattern-consumer-loss");
+patternConsumerLoss.setAttribute("width", "8");
+patternConsumerLoss.setAttribute("height", "8");
+patternConsumerLoss.setAttribute("patternUnits", "userSpaceOnUse");
+const lineConsumerLoss1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineConsumerLoss1.setAttribute("x1", "4");
+lineConsumerLoss1.setAttribute("y1", "0");
+lineConsumerLoss1.setAttribute("x2", "4");
+lineConsumerLoss1.setAttribute("y2", "8");
+lineConsumerLoss1.setAttribute("stroke", "rgba(59, 130, 246, 0.8)");
+lineConsumerLoss1.setAttribute("stroke-width", "2");
+patternConsumerLoss.appendChild(lineConsumerLoss1);
+const lineConsumerLoss2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineConsumerLoss2.setAttribute("x1", "0");
+lineConsumerLoss2.setAttribute("y1", "4");
+lineConsumerLoss2.setAttribute("x2", "8");
+lineConsumerLoss2.setAttribute("y2", "4");
+lineConsumerLoss2.setAttribute("stroke", "rgba(59, 130, 246, 0.8)");
+lineConsumerLoss2.setAttribute("stroke-width", "2");
+patternConsumerLoss.appendChild(lineConsumerLoss2);
+defs.appendChild(patternConsumerLoss);
+// Producer Loss
+const patternProducerLoss = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternProducerLoss.setAttribute("id", "pattern-producer-loss");
+patternProducerLoss.setAttribute("width", "8");
+patternProducerLoss.setAttribute("height", "8");
+patternProducerLoss.setAttribute("patternUnits", "userSpaceOnUse");
+const lineProducerLoss1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineProducerLoss1.setAttribute("x1", "4");
+lineProducerLoss1.setAttribute("y1", "0");
+lineProducerLoss1.setAttribute("x2", "4");
+lineProducerLoss1.setAttribute("y2", "8");
+lineProducerLoss1.setAttribute("stroke", "rgba(34, 197, 94, 0.8)");
+lineProducerLoss1.setAttribute("stroke-width", "2");
+patternProducerLoss.appendChild(lineProducerLoss1);
+const lineProducerLoss2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineProducerLoss2.setAttribute("x1", "0");
+lineProducerLoss2.setAttribute("y1", "4");
+lineProducerLoss2.setAttribute("x2", "8");
+lineProducerLoss2.setAttribute("y2", "4");
+lineProducerLoss2.setAttribute("stroke", "rgba(34, 197, 94, 0.8)");
+lineProducerLoss2.setAttribute("stroke-width", "2");
+patternProducerLoss.appendChild(lineProducerLoss2);
+defs.appendChild(patternProducerLoss);
+// Producer Externality Pattern
+const patternProducerExternality = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternProducerExternality.setAttribute("id", "pattern-producer-externality");
+patternProducerExternality.setAttribute("width", "8");
+patternProducerExternality.setAttribute("height", "8");
+patternProducerExternality.setAttribute("patternUnits", "userSpaceOnUse");
+const lineProducerExternality = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineProducerExternality.setAttribute("x1", "0");
+lineProducerExternality.setAttribute("y1", "0");
+lineProducerExternality.setAttribute("x2", "0");
+lineProducerExternality.setAttribute("y2", "8");
+lineProducerExternality.setAttribute("stroke", "rgba(249, 115, 22, 0.8)");
+lineProducerExternality.setAttribute("stroke-width", "2");
+patternProducerExternality.appendChild(lineProducerExternality);
+defs.appendChild(patternProducerExternality);
+// Consumer Externality Pattern
+const patternConsumerExternality = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+patternConsumerExternality.setAttribute("id", "pattern-consumer-externality");
+patternConsumerExternality.setAttribute("width", "8");
+patternConsumerExternality.setAttribute("height", "8");
+patternConsumerExternality.setAttribute("patternUnits", "userSpaceOnUse");
+const lineConsumerExternality = document.createElementNS("http://www.w3.org/2000/svg", "line");
+lineConsumerExternality.setAttribute("x1", "0");
+lineConsumerExternality.setAttribute("y1", "0");
+lineConsumerExternality.setAttribute("x2", "8");
+lineConsumerExternality.setAttribute("y2", "0");
+lineConsumerExternality.setAttribute("stroke", "rgba(249, 115, 22, 0.8)");
+lineConsumerExternality.setAttribute("stroke-width", "2");
+patternConsumerExternality.appendChild(lineConsumerExternality);
+defs.appendChild(patternConsumerExternality);
+svg.appendChild(defs);
+// --- Axes ---
+function drawAxes() {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.id = "axes";
+    svg.appendChild(g);
+    for (let i=0; i<=10; i++) {
+        const x = toSvgX(i*10);
+        const y = toSvgY(i*10);
+        let v = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        v.setAttribute("x1", x);
+        v.setAttribute("y1", M.top);
+        v.setAttribute("x2", x);
+        v.setAttribute("y2", M.top+innerH);
+        v.setAttribute("stroke", "#e5e7eb");
+        g.appendChild(v);
+        let h = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        h.setAttribute("x1", M.left);
+        h.setAttribute("y1", y);
+        h.setAttribute("x2", M.left+innerW);
+        h.setAttribute("y2", y);
+        h.setAttribute("stroke", "#e5e7eb");
+        g.appendChild(h);
+    }
+    const axis = (x1, y1, x2, y2) => {
+        const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l.setAttribute("x1", x1);
+        l.setAttribute("y1", y1);
+        l.setAttribute("x2", x2);
+        l.setAttribute("y2", y2);
+        l.setAttribute("stroke", "#000");
+        l.setAttribute("stroke-width", 2);
+        g.appendChild(l);
+    };
+    axis(M.left, M.top, M.left, M.top+innerH);
+    axis(M.left, M.top+innerH, M.left+innerW, M.top+innerH);
+    const text = (x, y, content, rotate=false, size=36, anchor="middle") => {
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", x);
+        t.setAttribute("y", y);
+        t.setAttribute("text-anchor", anchor);
+        t.setAttribute("font-size", size);
+        t.setAttribute("font-weight", "bold");
+        t.setAttribute("fill", "#374151");
+        t.classList.add("no-select");
+        if(rotate) t.setAttribute("transform", `rotate(-90,${x},${y})`);
+        t.textContent = content;
+        g.appendChild(t);
+    };
+    text(M.left+innerW, H-20, "Q", false, 38, "start");
+    text(M.left-10, M.top+20, "P", false, 38, "end");
+}
+// --- Intersection ---
+function intersection(a1, a2, b1, b2) {
+    const x1 = a1.q, y1 = a1.p, x2 = a2.q, y2 = a2.p;
+    const x3 = b1.q, y3 = b1.p, x4 = b2.q, y4 = b2.p;
+    const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+    if(Math.abs(denom) < 1e-6) return null;
+    const px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denom;
+    const py = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / denom;
+    return {q: px, p: py};
+}
+// --- Polygone ---
+function polygon(points, color) {
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    p.setAttribute("points", points.map(pt => `${pt.x},${pt.y}`).join(" "));
+    p.setAttribute("fill", color);
+    p.setAttribute("stroke", "none");
+    return p;
+}
+// --- Rectangle ---
+function rectangle(x, y, width, height, color) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", x);
+    rect.setAttribute("y", y);
+    rect.setAttribute("width", width);
+    rect.setAttribute("height", height);
+    rect.setAttribute("fill", color);
+    rect.setAttribute("stroke", "none");
+    return rect;
+}
+// --- Ligne ---
+function line(p1, p2, color) {
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", toSvgX(p1.q));
+    l.setAttribute("y1", toSvgY(p1.p));
+    l.setAttribute("x2", toSvgX(p2.q));
+    l.setAttribute("y2", toSvgY(p2.p));
+    l.setAttribute("stroke", color);
+    l.setAttribute("stroke-width", 3);
+    svg.querySelector("#dynamic").appendChild(l);
+}
+// --- Ligne tirets ---
+function dashedLine(x1, y1, x2, y2) {
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", x1);
+    l.setAttribute("y1", y1);
+    l.setAttribute("x2", x2);
+    l.setAttribute("y2", y2);
+    l.setAttribute("stroke", "#000");
+    l.setAttribute("stroke-width", 3);
+    l.setAttribute("stroke-dasharray", "8,6");
+    svg.querySelector("#dynamic").appendChild(l);
+}
+// --- Texte sur lignes ---
+function dashedLabel(x, y, textLabel, anchor="middle", dy=0, fontSize=20) {
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute("x", x);
+    t.setAttribute("y", y+dy);
+    t.setAttribute("text-anchor", anchor);
+    t.setAttribute("font-size", fontSize);
+    t.setAttribute("font-weight", "bold");
+    t.setAttribute("fill", "#000");
+    t.classList.add("no-select");
+    t.textContent = textLabel;
+    svg.querySelector("#dynamic").appendChild(t);
+}
+// --- Texte avec indice ---
+function dashedLabelWithSubscript(x, y, mainText, subText, anchor="middle", dy=0, fontSize=20, subSize=14) {
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute("x", x);
+    t.setAttribute("y", y+dy);
+    t.setAttribute("text-anchor", anchor);
+    t.setAttribute("font-size", fontSize);
+    t.setAttribute("font-weight", "bold");
+    t.setAttribute("fill", "#000");
+    t.classList.add("no-select");
+    const main = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+    main.textContent = mainText;
+    const sub = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+    sub.textContent = subText;
+    sub.setAttribute("baseline-shift", "sub");
+    sub.setAttribute("font-size", subSize);
+    t.appendChild(main);
+    t.appendChild(sub);
+    svg.querySelector("#dynamic").appendChild(t);
+}
+// --- Dot draggable ---
+function addDraggableDot(cx, cy, color, type, g) {
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", cx);
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r", 10);
+    circle.setAttribute("fill", color);
+    circle.classList.add("dot");
+    circle.style.cursor = "ns-resize";
+    g.appendChild(circle);
+    // Ajout du label "Demand" ou "Supply" à gauche
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", cx - 15);
+    label.setAttribute("y", cy + 5);
+    label.setAttribute("text-anchor", "end");
+    label.setAttribute("font-size", "16");
+    label.setAttribute("font-weight", "bold");
+    label.setAttribute("fill", color);
+    label.classList.add("no-select");
+    if (type === "producerTax") {
+        label.textContent = "Tax";
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        sub.textContent = "Producer";
+        sub.setAttribute("baseline-shift", "sub");
+        sub.setAttribute("font-size", "12");
+        label.appendChild(sub);
+    }
+    else if (type === "consumerTax") {
+        label.textContent = "Tax";
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        sub.textContent = "Consumer";
+        sub.setAttribute("baseline-shift", "sub");
+        sub.setAttribute("font-size", "12");
+        label.appendChild(sub);
+    }
+    else if (type === "producerExternality") {
+        label.textContent = "E";
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        sub.textContent = "Producer";
+        sub.setAttribute("baseline-shift", "sub");
+        sub.setAttribute("font-size", "12");
+        label.appendChild(sub);
+    }
+    else if (type === "consumerExternality") {
+        label.textContent = "E";
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        sub.textContent = "Consumer";
+        sub.setAttribute("baseline-shift", "sub");
+        sub.setAttribute("font-size", "12");
+        label.appendChild(sub);
+    }
+    else label.textContent = type === "demand" ? "Demand" : "Supply";
+    g.appendChild(label);
+    let dragging = false;
+    circle.addEventListener("mousedown", () => dragging = true);
+    window.addEventListener("mouseup", () => dragging = false);
+    window.addEventListener("mousemove", e => {
+        if(!dragging) return;
+        const rect = svg.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const newP = Math.max(0, Math.min(100, ((M.top+innerH - y)/innerH)*100));
+        if(type === "demand") {
+            if(producerTaxEnabled && producerExternalityEnabled) {
+                demand.intercept = Math.max(newP, producerExternality.intercept, producerTax.intercept, supply.intercept);
+            } else if(fixedPriceEnabled && producerTaxEnabled) {
+                demand.intercept = Math.max(newP, fixedPrice, producerTax.intercept, supply.intercept);
+            } else if(producerTaxEnabled) {
+                demand.intercept = Math.max(newP, producerTax.intercept, supply.intercept);
+            } else if(fixedPriceEnabled || fixedPriceAboveEnabled) {
+                demand.intercept = Math.max(newP, fixedPriceEnabled ? fixedPrice : fixedPriceAbove);
+            } else if(openMarketEnabled) {
+                demand.intercept = Math.max(newP, Math.max(tariff, globalMarketPrice));
+            } else if(producerExternalityEnabled) {
+                demand.intercept = Math.max(newP, producerExternality.intercept, supply.intercept);
+            } else if(consumerExternalityEnabled) {
+                demand.intercept = Math.max(newP, consumerExternality.intercept, supply.intercept);
+            } else {
+                demand.intercept = Math.max(newP, supply.intercept);
+            }
+        } else if (type === "supply") {
+            if (fixedPriceEnabled && consumerTaxEnabled) {
+                    supply.intercept = Math.min(newP, fixedPrice, consumerTax.intercept);
+            } else if (consumerExternalityEnabled) {
+                supply.intercept = Math.min(newP, demand.intercept, consumerExternality.intercept);
+            } else if (fixedPriceEnabled || fixedPriceAboveEnabled) {
+                supply.intercept = Math.min(newP, fixedPriceEnabled ? fixedPrice : fixedPriceAbove);
+            } else if (openMarketEnabled) {
+                supply.intercept = Math.min(newP, Math.min(tariff, globalMarketPrice));
+            } else if (consumerTaxEnabled) {
+                supply.intercept = Math.min(newP, consumerTax.intercept);
+            } else {
+                supply.intercept = Math.min(newP, demand.intercept);
+            }
+        } else if(type === "producerExternality") {
+            producerExternality.intercept = Math.min(newP, demand.intercept);
+        } else if(type === "consumerExternality") {
+            consumerExternality.intercept = Math.max(newP, supply.intercept);
+        } else if(type === "producerTax") {
+            producerTax.intercept = Math.min(newP, demand.intercept);
+        } else if(type === "consumerTax") {
+            consumerTax.intercept = Math.max(newP, supply.intercept);
+        }
+        render();
+    });
+}
+// --- Fixed Price Dot ---
+function addFixedPriceDot(g, price, color) {
+    const y = toSvgY(price);
+    const x1 = toSvgX(0);
+    const x2 = toSvgX(100);
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", x1);
+    l.setAttribute("y1", y);
+    l.setAttribute("x2", x2);
+    l.setAttribute("y2", y);
+    l.setAttribute("stroke", color);
+    l.setAttribute("stroke-width", 3);
+    l.setAttribute("stroke-dasharray", "6,4");
+    g.appendChild(l);
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x1);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", 8);
+    dot.setAttribute("fill", color);
+    dot.style.cursor = "ns-resize";
+    g.appendChild(dot);
+    let dragging = false;
+    dot.addEventListener("mousedown", () => dragging = true);
+    window.addEventListener("mouseup", () => dragging = false);
+    window.addEventListener("mousemove", e => {
+        if(!dragging) return;
+        const rect = svg.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        let newPrice = Math.max(0, Math.min(100, ((M.top+innerH - mouseY)/innerH)*100));
+        newPrice = Math.max(supply.intercept, Math.min(demand.intercept, newPrice));
+        if(fixedPriceAboveEnabled) fixedPriceAbove = newPrice;
+        if(fixedPriceEnabled) fixedPrice = newPrice;
+        render();
+    });
+    return y;
+}
+// --- Tariff Line ---
+function addTariffLine(g, eq) {
+    const yTariff = toSvgY(tariff);
+    const x1 = toSvgX(0);
+    const x2 = toSvgX(100);
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", x1);
+    l.setAttribute("y1", yTariff);
+    l.setAttribute("x2", x2);
+    l.setAttribute("y2", yTariff);
+    l.setAttribute("stroke", "rgba(255, 215, 0, 0.8)");
+    l.setAttribute("stroke-width", 3);
+    g.appendChild(l);
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x1);
+    dot.setAttribute("cy", yTariff);
+    dot.setAttribute("r", 8);
+    dot.setAttribute("fill", "rgba(255, 215, 0, 0.8)");
+    dot.style.cursor = "ns-resize";
+    g.appendChild(dot);
+    let dragging = false;
+    dot.addEventListener("mousedown", () => dragging = true);
+    window.addEventListener("mouseup", () => dragging = false);
+    window.addEventListener("mousemove", e => {
+        if(!dragging) return;
+        const rect = svg.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        let newTariff = Math.max(0, Math.min(100, ((M.top+innerH - mouseY)/innerH)*100));
+        newTariff = Math.max(supply.intercept, Math.min(demand.intercept, newTariff));
+        tariff = newTariff;
+        render();
+    });
+    return yTariff;
+}
+// --- Global Market Price Line ---
+function addGlobalMarketPriceLine(g) {
+    const y = toSvgY(globalMarketPrice);
+    const x1 = toSvgX(0);
+    const x2 = toSvgX(100);
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", x1);
+    l.setAttribute("y1", y);
+    l.setAttribute("x2", x2);
+    l.setAttribute("y2", y);
+    l.setAttribute("stroke", "#8b5cf6");
+    l.setAttribute("stroke-width", 3);
+    l.setAttribute("stroke-dasharray", "6,4");
+    g.appendChild(l);
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x1);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", 8);
+    dot.setAttribute("fill", "#8b5cf6");
+    dot.style.cursor = "ns-resize";
+    g.appendChild(dot);
+    let dragging = false;
+    dot.addEventListener("mousedown", () => dragging = true);
+    window.addEventListener("mouseup", () => dragging = false);
+    window.addEventListener("mousemove", e => {
+        if(!dragging) return;
+        const rect = svg.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
+        let newGlobalMarketPrice = Math.max(0, Math.min(100, ((M.top+innerH - mouseY)/innerH)*100));
+        newGlobalMarketPrice = Math.max(supply.intercept, Math.min(demand.intercept, newGlobalMarketPrice));
+        globalMarketPrice = newGlobalMarketPrice;
+        render();
+    });
+    return y;
+}
+// --- Render ---
+function render() {
+    let g = svg.querySelector("#dynamic");
+    if(!g) {
+        g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.id = "dynamic";
+        svg.appendChild(g);
+    } else {
+        g.innerHTML = "";
+    }
+    const d1 = {q: 0, p: demand.intercept};
+    const d2 = {q: 100, p: demand.intercept + demand.slope * 100};
+    const s1 = {q: 0, p: supply.intercept};
+    const s2 = {q: 100, p: supply.intercept + supply.slope * 100};
+    const t1 = {q: 0, p: producerTax.intercept};
+    const t2 = {q: 100, p: producerTax.intercept + producerTax.slope * 100};
+    const e1 = {q: 0, p: producerExternality.intercept};
+    const e2 = {q: 100, p: producerExternality.intercept + producerExternality.slope * 100};
+    const c1 = {q: 0, p: consumerExternality.intercept};
+    const c2 = {q: 100, p: consumerExternality.intercept + consumerExternality.slope * 100};
+    const ct1 = {q: 0, p: consumerTax.intercept};
+    const ct2 = {q: 100, p: consumerTax.intercept + consumerTax.slope * 100};
+    const eq = intersection(d1, d2, s1, s2);
+    if(!eq) return;
+    // Courbes d'abord
+    line(d1, d2, "#2563eb");
+    line(s1, s2, "#16a34a");
+    // Gestion des combinaisons
+
+    
+    if (openMarketEnabled && producerTaxEnabled) {
+        // Dessiner la courbe de producer tax
+        line(t1, t2, "#f59e0b");
+
+        // Ajouter les lignes pour le prix global et le tarif
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // Calculer les quantités d'équilibre avec le tarif
+        const q_consumers = (tariff - demand.intercept) / demand.slope;
+        const q_producers = (tariff - producerTax.intercept) / producerTax.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+
+        // Calculer les quantités d'équilibre avec le prix global
+        const q_supply_at_global_price = (globalMarketPrice - producerTax.intercept) / producerTax.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+
+        // Calculer les points sur les courbes
+        const p_consumer_final = demand.intercept + demand.slope * q_consumer_final;
+        const p_producer_final = producerTax.intercept + producerTax.slope * q_producer_final;
+
+        // Consumer Surplus (avec tarif)
+        const cs_open = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(q_consumer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+        // Producer Surplus (avec tarif)
+        const ps_open = [
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+            { x: toSvgX(q_producer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // Government Revenue (zone entre le tarif et le prix global)
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+            { x: toSvgX(q_producer_final), y: toSvgY(producerTax.intercept + producerTax.slope * q_producer_final) },
+            { x: toSvgX(q_producer_final), y: toSvgY(supply.intercept + supply.slope * q_producer_final) }
+        ];
+        const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+
+        // --- Government Area 2 : Différence entre le tarif et le prix global ---
+        if ((tariff !== globalMarketPrice) && (q_producer_final !== q_consumer_final) && ((tariff > eq.p && globalMarketPrice > eq.p) || (tariff < eq.p && globalMarketPrice < eq.p))) {
+            const governmentArea2 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+
+            // Logique de couleur ajustée selon la position relative à P*
+            let governmentColor2;
+            if (tariff > eq.p && globalMarketPrice > eq.p) {
+                // Les deux au-dessus de P* → inversion logique
+                governmentColor2 = (tariff < globalMarketPrice) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";} else {
+                // Les deux en dessous de P* → logique normale
+                governmentColor2 = (tariff > globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"   // recette (tarif protecteur)
+                    : "rgba(139, 69, 19, 0.6)";  // dépense
+            }
+
+            g.appendChild(polygon(governmentArea2, governmentColor2));
+        }
+
+        // --- Deadweight Loss (DWL) ---
+        if (tariff < eq.p && globalMarketPrice < eq.p) {
+            // Cas 1 : Tariff et Global < P* → perte due à restriction (importations)
+            const q_demand_tariff = (tariff - demand.intercept) / demand.slope;
+            const q_demand_global = (globalMarketPrice - demand.intercept) / demand.slope;
+
+            const dwlArea1 = [
+                { x: toSvgX(q_demand_tariff), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+
+            g.appendChild(polygon(dwlArea1, "rgba(255, 0, 0, 0.4)"));
+
+
+            const q_producer_global = (globalMarketPrice - producerTax.intercept) / producerTax.slope;
+            const q_producer_tariff = (tariff - producerTax.intercept) / producerTax.slope;
+
+            const dwlArea2 = [
+                { x: toSvgX(q_producer_global), y: yGlobal },  // Intersection PGlobal-tax producer
+                { x: toSvgX(q_producer_tariff), y: yTariff },  // Intersection Tariff-tax producer
+                { x: toSvgX(q_producer_final), y: yGlobal }    // Intersection PGlobal-Qproduced
+            ];
+
+            g.appendChild(polygon(dwlArea2, "rgba(255, 0, 0, 0.4)"));
+
+
+        } else if (tariff > eq.p && globalMarketPrice > eq.p) {
+            // Cas 2 : Tariff et Global > P* → perte due à subvention (surproduction)
+            const q_supply_global = (globalMarketPrice - supply.intercept) / supply.slope;
+            const p_supply_qproduced = supply.intercept + supply.slope * q_producer_final;
+
+            const dwlArea1 = [
+                { x: toSvgX(q_supply_global), y: yGlobal },                     // intersection offre-prix global
+                { x: toSvgX(q_producer_final), y: toSvgY(p_supply_qproduced) }, // point sur offre à Qproduced
+                { x: toSvgX(q_producer_final), y: yGlobal }                     // prix global à Qproduced
+            ];
+
+            g.appendChild(polygon(dwlArea1, "rgba(255, 0, 0, 0.4)"));
+
+
+            const q_demand_global = (globalMarketPrice - demand.intercept) / demand.slope;
+            const q_demand_tariff = (tariff - demand.intercept) / demand.slope;
+
+            const dwlArea2 = [
+                { x: toSvgX(q_demand_global), y: yGlobal },      // Intersection demande-PGlobal
+                { x: toSvgX(q_demand_tariff), y: yTariff },      // Intersection Tariff-demande
+                { x: toSvgX(q_consumer_final), y: yGlobal }      // Intersection PGlobal-Qconsumed
+            ];
+
+            g.appendChild(polygon(dwlArea2, "rgba(255, 0, 0, 0.4)"));
+        }
+
+        // Légende DWL
+        const dwlLegendText = document.getElementById("dwlLegendText");
+        if (dwlLegendText) {
+            dwlLegendText.textContent = "Deadweight Loss";
+        }
+
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+        dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+        dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+    }
+
+
+
+
+
+
+
+
+    else if (openMarketEnabled && fixedPriceAboveEnabled) {
+        // --- Lignes principales ---
+        const yQuotaFreeTrade = addFixedPriceDot(g, fixedPriceAbove, "#f59e0b");
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // --- Quantités ---
+        const q_consumers_tariff = (tariff - demand.intercept) / demand.slope;
+        const q_consumers_quota = (fixedPriceAbove - demand.intercept) / demand.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers_tariff)); // CS fixé par Tariff
+        const q_consumer_quota = Math.max(0, Math.min(100, q_consumers_quota));  // Q consommé sous PQuota
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+        const q_supply_at_global_price = (globalMarketPrice - supply.intercept) / supply.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+        const q_demand_at_global_price = (globalMarketPrice - demand.intercept) / demand.slope;
+        const q_demand_global = Math.max(0, Math.min(100, q_demand_at_global_price));
+        const q_supply_quota_raw = (fixedPriceAbove - supply.intercept) / supply.slope;
+        const q_supply_quota = Math.max(0, Math.min(100, q_supply_quota_raw));
+
+        // === Détermination du sens ===
+        const isBelow = (globalMarketPrice <= eq.p && tariff <= eq.p);
+        const isAbove = (globalMarketPrice >= eq.p && tariff >= eq.p);
+
+        // === CONSUMER SURPLUS ===
+        let cs_open = [];
+        if (isBelow) {
+            cs_open = [
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(0), y: yTariff },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+        } else if (isAbove) {
+            cs_open = [
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(0), y: yTariff },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+        }
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+        // === PRODUCER SURPLUS ===
+        let ps_y_top, ps_q_right;
+        if (isBelow) {
+            // CORRECTION : Toujours utiliser yTariff et q_producer_final si en dessous de P*
+            ps_y_top = yTariff;
+            ps_q_right = q_producer_final;
+        } else {
+            ps_y_top = yTariff;
+            ps_q_right = q_producer_final;
+        }
+        const ps_open = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: ps_y_top },
+            { x: toSvgX(ps_q_right), y: ps_y_top }
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // === Government Area ===
+        const shouldShowGovernmentArea =
+            (tariff !== globalMarketPrice) &&
+            (q_producer_final !== q_consumer_final) &&
+            !((tariff > eq.p && globalMarketPrice < eq.p) || (tariff < eq.p && globalMarketPrice > eq.p));
+        if (shouldShowGovernmentArea) {
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+            const governmentColor = (tariff > globalMarketPrice)
+                ? (isAbove ? "rgba(139, 69, 19, 0.6)" : "rgba(255, 215, 0, 0.6)")
+                : (isAbove ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)");
+            g.appendChild(polygon(governmentArea, governmentColor));
+        }
+
+        // === DWL STANDARD ===
+        if (isBelow || isAbove) {
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        // === DWL / Consumer Loss ===
+        if (isAbove && fixedPriceAbove < tariff) {
+            const point_quota_on_demand = { x: toSvgX(q_consumer_quota), y: yQuotaFreeTrade };
+            const point_tariff_on_quotaQ = { x: toSvgX(q_consumer_quota), y: yTariff };
+            const consumerLoss = [
+                point_quota_on_demand,
+                point_tariff_on_quotaQ,
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+            g.appendChild(polygon(consumerLoss, "rgba(239, 68, 68, 0.4)"));
+            g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+        }
+
+        // === Producer Loss si en dessous de P* et PQuota > Tariff ===
+        if (isBelow && fixedPriceAbove > tariff) {
+            const qTariffProduced = q_producer_final;
+            const qQ = q_supply_quota;
+            const dwl_below = [
+                { x: toSvgX(qTariffProduced), y: yTariff },
+                { x: toSvgX(qQ), y: yQuotaFreeTrade },
+                { x: toSvgX(qQ), y: yTariff }
+            ];
+            g.appendChild(polygon(dwl_below, "rgba(239, 68, 68, 0.4)"));
+
+            const producerLoss = [
+                { x: toSvgX(qTariffProduced), y: yTariff },
+                { x: toSvgX(qQ), y: yQuotaFreeTrade },
+                { x: toSvgX(qQ), y: yTariff }
+            ];
+            g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+        }
+
+        // === Lignes pointillées + labels ===
+        if (isBelow) {
+            dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+            if (fixedPriceAbove < tariff) {
+                dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+            } else {
+                dashedLine(toSvgX(q_supply_quota), yQuotaFreeTrade, toSvgX(q_supply_quota), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_supply_quota), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+            }
+        } else if (isAbove) {
+            dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+            if (fixedPriceAbove < tariff) {
+                dashedLine(toSvgX(q_consumer_quota), yQuotaFreeTrade, toSvgX(q_consumer_quota), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_consumer_quota), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+            } else {
+                dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+            }
+        }
+
+        // === Labels de prix ===
+        dashedLabelWithSubscript(M.left - 25, yQuotaFreeTrade, "P", "Quota", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+
+        // === Import / Export ===
+        if (q_consumer_final !== q_producer_final) {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", toSvgX((q_consumer_final + q_producer_final) / 2));
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("font-size", "16");
+            if (q_consumer_final > q_producer_final) {
+                label.setAttribute("y", yTariff + 30);
+                label.setAttribute("fill", "#2563eb");
+                label.textContent = "Import";
+            } else {
+                label.setAttribute("y", yTariff - 30);
+                label.setAttribute("fill", "#16a34a");
+                label.textContent = "Export";
+            }
+            g.appendChild(label);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    else if (openMarketEnabled && fixedPriceEnabled) {
+        // --- Lignes principales ---
+        const yQuotaFreeTrade = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // --- Quantités ---
+        const q_consumers = (tariff - demand.intercept) / demand.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+        const q_supply_at_global_price = (globalMarketPrice - supply.intercept) / supply.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+        const q_demand_at_global_price = (globalMarketPrice - demand.intercept) / demand.slope;
+        const q_demand_global = Math.max(0, Math.min(100, q_demand_at_global_price));
+        const q_supply_at_quota = (fixedPrice - supply.intercept) / supply.slope;
+        const q_supply_quota = Math.max(0, Math.min(100, q_supply_at_quota));
+        const q_demand_quota = (fixedPrice - demand.intercept) / demand.slope;
+
+        // === Détermination du sens (au-dessus ou en dessous de P*) ===
+        const isBelow = (globalMarketPrice <= eq.p && tariff <= eq.p);
+        const isAbove = (globalMarketPrice >= eq.p && tariff >= eq.p);
+
+        // === CONSUMER SURPLUS ===
+        let cs_open = [];
+        if (isBelow) {
+            // Cas : En dessous de P*
+            cs_open = [
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(0), y: yTariff },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+        } else if (isAbove) {
+            // Cas : Au-dessus de P*
+            if (fixedPrice > tariff) {
+                // PQuota > PTariff
+                cs_open = [
+                    { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                    { x: toSvgX(0), y: yQuotaFreeTrade },
+                    { x: toSvgX(q_demand_quota), y: yQuotaFreeTrade }
+                ];
+            } else {
+                // PQuota <= PTariff
+                cs_open = [
+                    { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                    { x: toSvgX(0), y: yTariff },
+                    { x: toSvgX(q_consumer_final), y: yTariff }
+                ];
+            }
+        }
+        // Ajout du polygone du Consumer Surplus dans tous les cas
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+
+        // === PRODUCER SURPLUS ===
+        let ps_y_top = yTariff; // PS toujours limité à Tariff si isAbove
+        let ps_q_right = q_producer_final;
+        if (isBelow && fixedPrice < tariff) {
+            ps_y_top = yQuotaFreeTrade;
+            ps_q_right = q_supply_quota;
+        }
+        const ps_open = isBelow
+            ? [
+                { x: toSvgX(0), y: ps_y_top },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(ps_q_right), y: ps_y_top }
+            ]
+            : [
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(0), y: ps_y_top },
+                { x: toSvgX(ps_q_right), y: ps_y_top }
+            ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // === Government Area ===
+        // === Government Area ===
+        const shouldShowGovernmentArea =
+            (tariff !== globalMarketPrice) &&
+            (q_producer_final !== q_consumer_final) &&
+            !((tariff > eq.p && globalMarketPrice < eq.p) || (tariff < eq.p && globalMarketPrice > eq.p));
+
+        if (shouldShowGovernmentArea) {
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+            let governmentColor;
+            if (isAbove) {
+                governmentColor = (tariff > globalMarketPrice)
+                    ? "rgba(139, 69, 19, 0.6)"
+                    : "rgba(255, 215, 0, 0.6)";
+            } else {
+                governmentColor = (tariff > globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            }
+            g.appendChild(polygon(governmentArea, governmentColor));
+        }
+
+
+        // === DWL STANDARD ===
+        if (isBelow || isAbove) {
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        // === DWL QUOTA CORRIGÉ ===
+        if ((isBelow && fixedPrice < tariff) || (isAbove && fixedPrice > Math.min(globalMarketPrice, tariff))) {
+            // Ne pas dessiner DWL si PGlobal < PQuota < PTariff
+            if (!(isAbove && fixedPrice > globalMarketPrice && fixedPrice < tariff)) {
+                const dwl_quota = isAbove
+                    ? [
+                        { x: toSvgX(0), y: yQuotaFreeTrade },
+                        { x: toSvgX(q_demand_quota), y: yQuotaFreeTrade },
+                        { x: toSvgX(q_consumer_final), y: yTariff },
+                        { x: toSvgX(0), y: yTariff }
+                    ]
+                    : [
+                        { x: toSvgX(0), y: yQuotaFreeTrade },
+                        { x: toSvgX(q_supply_quota), y: yQuotaFreeTrade },
+                        { x: toSvgX(q_producer_final), y: yTariff },
+                        { x: toSvgX(0), y: yTariff }
+                    ];
+                g.appendChild(polygon(dwl_quota, "rgba(239, 68, 68, 0.4)"));
+            }
+        }
+
+        // === Lignes pointillées + labels ===
+        if (isBelow) {
+            // Cas 1 : En dessous de P*, ligne de QConsumed
+            dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+
+            // Cas 2 : En dessous de P* et PQuota > Tariff, ligne de QProduced
+            if (fixedPrice > tariff) {
+                dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+            }
+            // Cas 3 : En dessous de P* et PQuota < Tariff, ligne de QProduced à partir de PQuota
+            else if (fixedPrice < tariff) {
+                dashedLine(toSvgX(q_supply_quota), yQuotaFreeTrade, toSvgX(q_supply_quota), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_supply_quota), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+            }
+        }
+        else if (isAbove) {
+            // Cas 4 : Au-dessus de P*, ligne de QProduced
+            dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+
+            // Cas 5 : Au-dessus de P* et PQuota < Tariff, ligne de QConsumed
+            if (fixedPrice < tariff) {
+                dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+            }
+            // Cas 6 : Au-dessus de P* et PQuota > Tariff, ligne de QConsumed à partir de PQuota
+            else if (fixedPrice > tariff) {
+                dashedLine(toSvgX(q_demand_quota), yQuotaFreeTrade, toSvgX(q_demand_quota), toSvgY(0));
+                dashedLabelWithSubscript(toSvgX(q_demand_quota), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+            }
+        }
+
+        dashedLabelWithSubscript(M.left - 25, yQuotaFreeTrade, "P", "Quota", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+
+        // === Import / Export ===
+        if (q_consumer_final !== q_producer_final) {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", toSvgX((q_consumer_final + q_producer_final) / 2));
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("font-size", "16");
+            if (q_consumer_final > q_producer_final) {
+                label.setAttribute("y", yTariff + 30);
+                label.setAttribute("fill", "#2563eb");
+                label.textContent = "Import";
+            } else {
+                label.setAttribute("y", yTariff - 30);
+                label.setAttribute("fill", "#16a34a");
+                label.textContent = "Export";
+            }
+            g.appendChild(label);
+        }
+    }
+
+
+
+
+
+
+
+    else if (openMarketEnabled && consumerTaxEnabled) {
+        // Dessiner la courbe de demande taxée
+        line(ct1, ct2, "#f59e0b");
+
+        // Ajouter les lignes pour le prix global et le tarif
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // Calculer les quantités avec le tarif
+        const q_consumers = (tariff - consumerTax.intercept) / consumerTax.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+
+        // Calculer les quantités avec le prix global
+        const q_demand_global = (globalMarketPrice - consumerTax.intercept) / consumerTax.slope;
+        const q_supply_global = (globalMarketPrice - supply.intercept) / supply.slope;
+
+        const q_demand_global_final = Math.max(0, Math.min(100, q_demand_global));
+        const q_supply_global_final = Math.max(0, Math.min(100, q_supply_global));
+
+        // --- Consumer Surplus (avec tarif)
+        const cs_open = [
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(q_consumer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+        // --- Producer Surplus (avec tarif)
+        const ps_open = [
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_producer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // --- Government Revenue (entre demande, demande taxée, et tarif) ---
+        const q_inter_tax_tariff = (tariff - consumerTax.intercept) / consumerTax.slope;
+        const p_demand_qconsumed = demand.intercept + demand.slope * q_consumer_final;
+
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },           // Intersection demande - axe des ordonnées
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },      // Intersection demande taxée - axe des ordonnées
+            { x: toSvgX(q_inter_tax_tariff), y: toSvgY(tariff) },    // Intersection consumerTax - tarif
+            { x: toSvgX(q_consumer_final), y: toSvgY(p_demand_qconsumed) } // Point sur la demande à Qconsumed
+        ];
+
+        const governmentColor = (consumerTax.intercept < demand.intercept)
+            ? "rgba(255, 215, 0, 0.6)"
+            : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+
+        // --- Government Area 2 : Différence entre tarif et prix global ---
+        if (
+            (tariff !== globalMarketPrice) &&
+            (q_producer_final !== q_consumer_final) &&
+            ((tariff > eq.p && globalMarketPrice > eq.p) || (tariff < eq.p && globalMarketPrice < eq.p))
+        ) {
+            const governmentArea2 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+
+            let governmentColor2;
+            if (tariff > eq.p && globalMarketPrice > eq.p) {
+                // Les deux au-dessus de P* → inversion logique
+                governmentColor2 = (tariff < globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            } else {
+                // Les deux en dessous de P* → logique normale
+                governmentColor2 = (tariff > globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            }
+
+            g.appendChild(polygon(governmentArea2, governmentColor2));
+        }
+
+        // --- DWL : Cas où Tariff et Global sont en dessous de P* ---
+        if (tariff < eq.p && globalMarketPrice < eq.p) {
+
+            // Intersection demande - PGlobal
+            const q_inter_demand_global = (globalMarketPrice - demand.intercept) / demand.slope;
+
+            // Points pour le DWL
+            const p_demand_qconsumed = demand.intercept + demand.slope * q_consumer_final;
+
+            const dwlArea1 = [
+                { x: toSvgX(q_consumer_final), y: toSvgY(globalMarketPrice) },  // sur PGlobal à Qconsumed
+                { x: toSvgX(q_consumer_final), y: toSvgY(p_demand_qconsumed) }, // sur la demande à Qconsumed
+                { x: toSvgX(q_inter_demand_global), y: toSvgY(globalMarketPrice) } // intersection demande - PGlobal
+            ];
+
+            g.appendChild(polygon(dwlArea1, "rgba(255, 0, 0, 0.4)"));
+
+            // DWL entre PGlobal–Supply, Tariff–Supply, et PGlobal–QProduced
+            const dwlArea2 = [
+                { x: toSvgX(q_supply_global_final), y: yGlobal },   // PGlobal–Supply
+                { x: toSvgX(q_producer_final), y: yTariff },        // Tariff–Supply
+                { x: toSvgX(q_producer_final), y: yGlobal }         // PGlobal–QProduced
+            ];
+            g.appendChild(polygon(dwlArea2, "rgba(255, 0, 0, 0.4)"));
+        }
+
+
+        else if (tariff > eq.p && globalMarketPrice > eq.p) {
+            // Cas 2 : Tariff et Global > P* → perte due à subvention (surproduction)
+            const q_supply_global = (globalMarketPrice - supply.intercept) / supply.slope;
+            const p_supply_qproduced = supply.intercept + supply.slope * q_producer_final;
+
+            const dwlArea1 = [
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: toSvgY(p_supply_qproduced) },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+
+            g.appendChild(polygon(dwlArea1, "rgba(255, 0, 0, 0.4)"));
+
+            const q_consumed_global = (globalMarketPrice - demand.intercept) / demand.slope;
+            const q_tax_global = (globalMarketPrice - consumerTax.intercept) / consumerTax.slope;
+            const q_tax_tariff = (tariff - consumerTax.intercept) / consumerTax.slope;
+
+            const dwlArea2 = [
+                { x: toSvgX(q_consumer_final), y: yGlobal },  // PGlobal–Qconsumed
+                { x: toSvgX(q_tax_global), y: yGlobal },       // PGlobal–tax consumer
+                { x: toSvgX(q_tax_tariff), y: yTariff }        // Tariff–tax consumer
+            ];
+            g.appendChild(polygon(dwlArea2, "rgba(255, 0, 0, 0.4)"));
+        }
+
+
+        if (
+            (tariff !== globalMarketPrice) &&
+            (q_producer_final !== q_consumer_final) &&
+            ((tariff > eq.p && globalMarketPrice > eq.p) || (tariff < eq.p && globalMarketPrice < eq.p))
+        ) {
+            const governmentArea2 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+
+            let governmentColor2;
+            if (tariff > eq.p && globalMarketPrice > eq.p) {
+                governmentColor2 = (tariff < globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            } else {
+                governmentColor2 = (tariff > globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            }
+
+            g.appendChild(polygon(governmentArea2, governmentColor2));
+        }
+
+        // --- Légende DWL ---
+        const dwlLegendText = document.getElementById("dwlLegendText");
+        if (dwlLegendText) {
+            dwlLegendText.textContent = "Deadweight Loss";
+        }
+
+        // --- Lignes pointillées et labels ---
+        dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+        dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+        dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+    }
+
+
+
+
+
+
+    else if (producerExternalityEnabled && fixedPriceEnabled) {
+        // Dessiner la courbe d'externalité du producteur
+        line(e1, e2, "#f97316");
+
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixed = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+
+        // Calculer Q_quota en fonction de la position de P_quota par rapport à P*
+        let qFixed;
+        if (fixedPrice < eq.p) {
+            // Si P_quota < P*, Q_quota = intersection entre P_quota et Supply
+            qFixed = (fixedPrice - supply.intercept) / supply.slope;
+        } else {
+            // Si P_quota > P*, Q_quota = intersection entre P_quota et Demand
+            qFixed = (fixedPrice - demand.intercept) / demand.slope;
+        }
+        qFixed = Math.max(0, Math.min(100, qFixed)); // Limiter Q_quota entre 0 et 100
+
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * qFixed;
+        const pFixedExternality = producerExternality.intercept + producerExternality.slope * qFixed;
+        const pFixedDemand = demand.intercept + demand.slope * qFixed;
+
+        // --- Consumer Surplus ---
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // --- Producer Surplus ---
+        const ps = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // --- Producer Externality ---
+        const producerext = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: toSvgY(producerExternality.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedExternality) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) }
+        ];
+        g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+
+        // --- Consumer Rent ---
+        const consumerRent = [
+            { x: toSvgX(0), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)")); // bleu clair
+
+        // --- Producer Rent ---
+        const producerRent = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)")); // vert clair
+
+        // --- Calcul de l'optimum social (S*) ---
+        const socialOptimum = intersection(d1, d2, e1, e2);
+
+        // --- Deadweight Loss ---
+        const dwlPoints = [
+            { x: toSvgX(socialOptimum.q), y: toSvgY(socialOptimum.p) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedExternality) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+        // --- Lignes pointillées et labels ---
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(qFixed), toSvgY(0));
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(0), yFixed);
+        dashedLabelWithSubscript(toSvgX(qFixed), toSvgY(0)+20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixed, "P", "Quota", "end", 0, 20, 12);
+
+        // --- Point d'optimum social ---
+        if (socialOptimum) {
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(socialOptimum.q));
+            c.setAttribute("cy", toSvgY(socialOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(socialOptimum.q));
+            lbl.setAttribute("y", toSvgY(socialOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(socialOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(0), toSvgY(socialOptimum.p));
+            dashedLabelWithSubscript(toSvgX(socialOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(socialOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+
+        // --- Légende externalité ---
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+    }
+
+
+
+    else if (consumerExternalityEnabled && fixedPriceEnabled) {
+        // --- Courbe d'externalité du consommateur ---
+        line(c1, c2, "#f97316");
+
+        // --- Point de prix fixe (P_quota) ---
+        const yFixed = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+
+        // --- Calcul de Q_quota ---
+        let qFixed;
+        if (fixedPrice < eq.p) {
+            qFixed = (fixedPrice - supply.intercept) / supply.slope; // Si P_quota < P*, intersection avec l'offre
+        } else {
+            qFixed = (fixedPrice - demand.intercept) / demand.slope; // Sinon intersection avec la demande
+        }
+        qFixed = Math.max(0, Math.min(100, qFixed)); // Limiter entre 0 et 100
+
+        // --- Points sur les courbes ---
+        const pFixedSupply = supply.intercept + supply.slope * qFixed;
+        const pFixedExternality = consumerExternality.intercept + consumerExternality.slope * qFixed;
+        const pFixedDemand = demand.intercept + demand.slope * qFixed;
+
+        // --- Consumer Surplus ---
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // --- Producer Surplus ---
+        const ps = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // --- Consumer Externality ---
+        const consumerext = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: toSvgY(consumerExternality.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedExternality) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+
+        // --- Consumer Rent ---
+        const consumerRent = [
+            { x: toSvgX(0), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)")); // bleu clair
+
+        // --- Producer Rent ---
+        const producerRent = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)")); // vert clair
+
+        // --- Optimum social (S*) ---
+        const socialOptimum = intersection(c1, c2, s1, s2);
+
+        // --- Deadweight Loss ---
+        const dwlPoints = [
+            { x: toSvgX(socialOptimum.q), y: toSvgY(socialOptimum.p) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedExternality) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+        // --- Lignes pointillées et labels (Q_quota, P_quota) ---
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(qFixed), toSvgY(0));
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(0), yFixed);
+        dashedLabelWithSubscript(toSvgX(qFixed), toSvgY(0) + 20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixed, "P", "Quota", "end", 0, 20, 12);
+
+        // --- Point et labels d'optimum social ---
+        if (socialOptimum) {
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(socialOptimum.q));
+            c.setAttribute("cy", toSvgY(socialOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(socialOptimum.q));
+            lbl.setAttribute("y", toSvgY(socialOptimum.p) - 25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(socialOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(0), toSvgY(socialOptimum.p));
+            dashedLabelWithSubscript(toSvgX(socialOptimum.q), toSvgY(0) + 20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(socialOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+
+        // --- Légende externalité consommateur ---
+        if (consumerExternality.intercept > demand.intercept) {
+            consumerExternalityLegendText.textContent = "Consumer Externality (benefit)";
+        } else {
+            consumerExternalityLegendText.textContent = "Consumer Externality (cost)";
+        }
+    }
+
+
+
+
+
+
+    else if (producerExternalityEnabled && fixedPriceAboveEnabled) {
+        // Dessiner la courbe d'externalité du producteur
+        line(e1, e2, "#f97316");
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixedAbove = addFixedPriceDot(g, fixedPriceAbove, "#f97316");
+        // Calculer Q_quota en fonction de la position de P_quota par rapport à P*
+        let q_demand = (fixedPriceAbove - demand.intercept) / demand.slope;
+        let q_supply = (fixedPriceAbove - supply.intercept) / supply.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const q_fixed = Math.max(q_demand, q_supply);
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * q_fixed;
+        const pFixedExternality = producerExternality.intercept + producerExternality.slope * q_fixed;
+        const pFixedDemand = demand.intercept + demand.slope * q_fixed;
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(q_demand), y: yFixedAbove },
+            { x: toSvgX(0), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+        // Producer Surplus (modifié)
+        const ps = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+        // Producer Externality
+        const producerext = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: toSvgY(producerExternality.intercept) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedExternality) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) }
+        ];
+        g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+        // Calcul de l'optimum social (S*)
+        const socialOptimum = intersection(d1, d2, e1, e2);
+        // Calcul de la DWL
+        let dwlPoints = [
+            { x: toSvgX(socialOptimum.q), y: toSvgY(socialOptimum.p) }, // S*
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }, // Point sur la droite de la demande à Q_Quota
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedExternality) } // Point sur la droite de l'externalité à Q_Quota
+        ];
+        // Ajouter la DWL au graphique
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+        // Consumer Loss
+        const consumerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+        // Producer Loss
+        const producerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+        // Points d'équilibre
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(q_fixed), toSvgY(0));
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(0), yFixedAbove);
+        dashedLabelWithSubscript(toSvgX(q_fixed), toSvgY(0)+20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixedAbove, "P", "Quota", "end", 0, 20, 12);
+
+        if (fixedPriceAbove > eq.p) {
+       
+            const producerRent = [
+                { x: toSvgX(0), y: toSvgY(pFixedDemand) },       // P obtenu de l'intersection demande à Q_quota avec l'axe des ordonnées
+                { x: toSvgX(0), y: yFixedAbove },               // P_quota sur l'axe des ordonnées
+                { x: toSvgX(q_fixed), y: yFixedAbove },         // Point (Q_quota, P_quota)
+                { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) } // Intersection demande à Q_quota
+            ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+        }
+        else if (fixedPriceAbove < eq.p) {
+        
+            const consumerRent = [
+                { x: toSvgX(0), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(supply.intercept + supply.slope * q_fixed) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept + supply.slope * q_fixed) }
+
+            // Intersection demande à Q_quota
+            ];
+            g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        }
+
+        // Point d'optimum social
+        if (socialOptimum) {
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(socialOptimum.q));
+            c.setAttribute("cy", toSvgY(socialOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(socialOptimum.q));
+            lbl.setAttribute("y", toSvgY(socialOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(socialOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(0), toSvgY(socialOptimum.p));
+            dashedLabelWithSubscript(toSvgX(socialOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(socialOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        // Mettre à jour la légende de l'externalité du producteur
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+    }
+
+
+
+
+    else if (fixedPriceAboveEnabled && consumerExternalityEnabled) {
+        // Dessiner la courbe d'externalité du consommateur
+        line(c1, c2, "#f97316");
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixedAbove = addFixedPriceDot(g, fixedPriceAbove, "#f97316");
+        // Calculer Q_demand et Q_supply pour P_quota
+        let q_demand = (fixedPriceAbove - demand.intercept) / demand.slope;
+        let q_supply = (fixedPriceAbove - supply.intercept) / supply.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const q_fixed = Math.max(q_demand, q_supply);
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * q_fixed;
+        const pFixedExternality = consumerExternality.intercept + consumerExternality.slope * q_fixed;
+        const pFixedDemand = demand.intercept + demand.slope * q_fixed;
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+        // Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_supply), y: toSvgY(supply.intercept + supply.slope * q_supply) }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+        // Consumer Externality
+        const consumerext = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: toSvgY(consumerExternality.intercept) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedExternality) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+        // Calcul de l'optimum social (S*)
+        const socialOptimum = intersection(c1, c2, s1, s2);
+        // Deadweight Loss
+        const dwlPoints = [
+            { x: toSvgX(socialOptimum.q), y: toSvgY(socialOptimum.p) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply)},
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedExternality) }
+        ];
+
+
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+        // Consumer Loss
+        const consumerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+        // Producer Loss
+        const producerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+
+        // Producer Rent
+        const producerRent = [
+            { x: toSvgX(0), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_supply), y: toSvgY(supply.intercept + supply.slope * q_supply) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+
+        // Consumer Rent
+        const consumerRent = [
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: yFixedAbove },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) },            
+            { x: toSvgX(0), y: toSvgY(pFixedSupply) }
+
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        // Points d'équilibre
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(q_fixed), toSvgY(0));
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(0), yFixedAbove);
+        dashedLabelWithSubscript(toSvgX(q_fixed), toSvgY(0)+20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixedAbove, "P", "Quota", "end", 0, 20, 12);
+        // Point d'optimum social
+        if (socialOptimum) {
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(socialOptimum.q));
+            c.setAttribute("cy", toSvgY(socialOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(socialOptimum.q));
+            lbl.setAttribute("y", toSvgY(socialOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(socialOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(socialOptimum.q), toSvgY(socialOptimum.p), toSvgX(0), toSvgY(socialOptimum.p));
+            dashedLabelWithSubscript(toSvgX(socialOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(socialOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        // Légende externalité consommateur
+        if (consumerExternality.intercept > demand.intercept) {
+            consumerExternalityLegendText.textContent = "Consumer Externality (benefit)";
+        } else {
+            consumerExternalityLegendText.textContent = "Consumer Externality (cost)";
+        }
+    }
+
+
+
+
+    else if (fixedPriceAboveEnabled && producerTaxEnabled) {
+        // Dessiner la courbe de producer tax
+        line(t1, t2, "#f59e0b");
+
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixedAbove = addFixedPriceDot(g, fixedPriceAbove, "#f97316");
+
+        // Calculer Q_demand et Q_supply pour P_quota
+        let q_demand = (fixedPriceAbove - demand.intercept) / demand.slope;
+        let q_supply = (fixedPriceAbove - producerTax.intercept) / producerTax.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const q_fixed = Math.max(q_demand, q_supply);
+
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * q_fixed;
+        const pFixedTax = producerTax.intercept + producerTax.slope * q_fixed;
+        const pFixedDemand = demand.intercept + demand.slope * q_fixed;
+
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // Government Revenue (zone entre la supply, la producer tax, et Q_quota)
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) }, // Intersection supply - axe des ordonnées
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) }, // Intersection producer tax - axe des ordonnées
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedTax) }, // Intersection producer tax à Q_quota
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) } // Intersection supply à Q_quota
+        ];
+        const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+        // Producer Loss (zone entre la taxe du producteur, P_Quota, et la demande à Q_Quota)
+        const producerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove }, // Point (Q_Quota, P_Quota)
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedTax) }, // Intersection de la taxe du producteur à Q_Quota
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+
+
+        const consumerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove }, // Point (Q_Quota, P_Quota)
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }, // Intersection demande à Q_Quota
+            { x: toSvgX(q_demand), y: yFixedAbove }, // Point (Q_Demand, P_Quota)
+        ];
+        g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+
+        // Deadweight Loss (DWL)
+        const dwlPoints = [
+            { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(q_fixed), toSvgY(0));
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(0), yFixedAbove);
+        dashedLabelWithSubscript(toSvgX(q_fixed), toSvgY(0) + 20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixedAbove, "P", "Quota", "end", 0, 20, 12);
+    }
+
+
+
+    else if (fixedPriceAboveEnabled && consumerTaxEnabled) {
+        // Dessiner la courbe de demande taxée
+        line(ct1, ct2, "#f59e0b");
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixedAbove = addFixedPriceDot(g, fixedPriceAbove, "#f97316");
+        // Calculer Q_demand et Q_supply pour P_quota
+        let q_demand = (fixedPriceAbove - consumerTax.intercept) / consumerTax.slope;
+        let q_supply = (fixedPriceAbove - supply.intercept) / supply.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const q_fixed = Math.max(q_demand, q_supply);
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * q_fixed;
+        const pFixedExternality = consumerTax.intercept + consumerTax.slope * q_fixed;
+        const pFixedDemand = demand.intercept + demand.slope * q_fixed;
+
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_supply), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // Government Revenue (zone entre la demande, la taxe, et Q_quota)
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },                // Intersection demande - axe des ordonnées
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },           // Intersection demande taxée - axe des ordonnées
+            { x: toSvgX(q_fixed), y: toSvgY(consumerTax.intercept + consumerTax.slope * q_fixed) }, // Intersection demande taxée à Q_quota
+            { x: toSvgX(q_fixed), y: toSvgY(demand.intercept + demand.slope * q_fixed) }  // Intersection demande à Q_quota
+        ];
+        const governmentColor = (consumerTax.intercept < demand.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+        // Deadweight Loss (DWL)
+        const dwlPoints = [
+            { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+        const consumerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove }, // Intersection P_Quota et Taxe consommateur
+            { x: toSvgX(q_fixed), y: toSvgY(consumerTax.intercept + consumerTax.slope * q_fixed) }, // Intersection Taxe consommateur et Q_Quota
+            { x: toSvgX(q_demand), y: yFixedAbove } // Intersection P_Quota et Q_demand (pour fermer le polygone)
+        ];
+        g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+
+        // Producer Loss
+        const producerLoss = [
+            { x: toSvgX(q_fixed), y: yFixedAbove }, // Point (Q_quota, P_quota)
+            { x: toSvgX(q_fixed), y: toSvgY(pFixedSupply) }, // Intersection supply à Q_quota
+            { x: toSvgX(q_supply), y: yFixedAbove } // Intersection consumer tax à Q_supply
+        ];
+        g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(q_fixed), toSvgY(0));
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(0), yFixedAbove);
+        dashedLabelWithSubscript(toSvgX(q_fixed), toSvgY(0) + 20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixedAbove, "P", "Quota", "end", 0, 20, 12);
+    }
+
+
+
+    
+
+    else if (producerExternalityEnabled && consumerTaxEnabled) {
+        line(e1, e2, "#f97316");
+        line(ct1, ct2, "#f59e0b");
+        const externalityOptimum = intersection(d1, d2, e1, e2);
+        const taxEq = intersection(ct1, ct2, s1, s2);
+        if (externalityOptimum && taxEq) {
+            // Consumer Surplus
+            const cs = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            // Producer Surplus
+            const ps = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            // Deadweight Loss
+            const externalityAtEqQ = producerExternality.intercept + producerExternality.slope * taxEq.q;
+            const dwl = [
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            // Government Revenue
+
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) }
+            ];
+            const governmentColor = (consumerTax.intercept < demand.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+
+            const producerext = [
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) },
+                {x: toSvgX(0), y: toSvgY(producerExternality.intercept) }
+            ];
+            g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+
+            // Points d'équilibre
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLine(toSvgX(0), toSvgY(taxEq.p), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(taxEq.p), "P", "Tax", "end", 0, 20, 12);
+            // Point d'optimum social
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+    }
+    else if (consumerExternalityEnabled && consumerTaxEnabled) {
+        line(c1, c2, "#f97316");
+        line(ct1, ct2, "#f59e0b");
+        const externalityOptimum = intersection(c1, c2, s1, s2);
+        const taxEq = intersection(ct1, ct2, s1, s2);
+        if (externalityOptimum && taxEq) {
+            // Consumer Surplus
+            const cs = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            // Producer Surplus
+            const ps = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            // Deadweight Loss
+            const externalityAtEqQ = consumerExternality.intercept + consumerExternality.slope * taxEq.q;
+            const dwl = [
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            // Government Revenue (zone entre la taxe et la demande)
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) }
+            ];
+            const governmentColor = (consumerTax.intercept < demand.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+            const consumerext = [
+                { x: toSvgX(0), y: toSvgY(consumerExternality.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) },
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) }
+            ];
+            g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+            // Légende gouvernement
+            // Points d'équilibre
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLine(toSvgX(0), toSvgY(taxEq.p), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(taxEq.p), "P", "Tax", "end", 0, 20, 12);
+            // Point d'optimum social
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+    }
+    else if (consumerExternalityEnabled && producerTaxEnabled) {
+        line(c1, c2, "#f97316");
+        line(t1, t2, "#f59e0b");
+        const externalityOptimum = intersection(c1, c2, s1, s2);
+        const taxEq = intersection(d1, d2, t1, t2);
+        if (externalityOptimum && taxEq) {
+            // Consumer Surplus
+            const cs = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            // Producer Surplus
+            const ps = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            // Deadweight Loss
+            const externalityAtEqQ = consumerExternality.intercept + consumerExternality.slope * taxEq.q;
+            const dwl = [
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+
+
+            // Government Revenue (zone entre la taxe et l'offre)
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) }
+            ];
+            const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+
+            const consumerext = [
+                { x: toSvgX(0), y: toSvgY(consumerExternality.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) },
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) }
+            ];
+            g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+
+            // Points d'équilibre
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLine(toSvgX(0), toSvgY(taxEq.p), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(taxEq.p), "P", "Tax", "end", 0, 20, 12);
+            // Point d'optimum social
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+    }
+    else if (producerExternalityEnabled && producerTaxEnabled) {
+        line(t1, t2, "#f59e0b");
+        line(e1, e2, "#f97316");
+        const taxEq = intersection(d1, d2, t1, t2);
+        const externalityOptimum = intersection(d1, d2, e1, e2);
+        if (taxEq && externalityOptimum) {
+            const cs = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            const ps = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            const externalityAtEqQ = producerExternality.intercept + producerExternality.slope * taxEq.q;
+            const dwl = [
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+
+            // Government Revenue (zone entre la taxe et l'offre)
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) }
+            ];
+            const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+            const producerext = [
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(taxEq.q), y: toSvgY(externalityAtEqQ) },
+                {x: toSvgX(0), y: toSvgY(producerExternality.intercept) }
+            ];
+            g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLine(toSvgX(0), toSvgY(taxEq.p), toSvgX(taxEq.q), toSvgY(taxEq.p));
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(taxEq.p), "P", "Tax", "end", 0, 20, 12);
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+    }
+
+    else if (fixedPriceEnabled && consumerTaxEnabled) {
+        line(ct1, ct2, "#f59e0b");
+        const yFixed = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+        const qTaxDemand = (fixedPrice - consumerTax.intercept) / consumerTax.slope;
+        const qSupplyFixed = (fixedPrice - supply.intercept) / supply.slope;
+        const qTaxDemandBounded = Math.max(0, Math.min(100, qTaxDemand));
+        const qSupplyBounded = Math.max(0, Math.min(100, qSupplyFixed));
+        const qFixed = Math.min(qTaxDemandBounded, qSupplyBounded);
+        const pTaxAtQ = consumerTax.intercept + consumerTax.slope * qFixed;
+        const pSupplyAtQ = supply.intercept + supply.slope * qFixed;
+        const pFixedDemand = demand.intercept + demand.slope * qFixed;
+
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pTaxAtQ) }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pSupplyAtQ) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // Government Revenue (zone entre la taxe et la demande)
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(consumerTax.intercept + consumerTax.slope * qFixed) },
+            { x: toSvgX(qFixed), y: toSvgY(demand.intercept + demand.slope * qFixed) },
+            { x: toSvgX(0), y: toSvgY(demand.intercept) }
+        ];
+        const governmentColor = (consumerTax.intercept < demand.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+
+        // Deadweight Loss
+        const dwl = [
+            { x: toSvgX(qFixed), y: toSvgY(demand.intercept + demand.slope * qFixed) },
+            { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+            { x: toSvgX(qFixed), y: toSvgY(pSupplyAtQ) }
+        ];
+        g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+
+        // Consumer Rent (inspiré des autres exemples)
+        const consumerRent = [
+            { x: toSvgX(0), y: toSvgY(pTaxAtQ) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pTaxAtQ) }
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        // Producer Rent (inspiré des autres exemples)
+        const producerRent = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(pSupplyAtQ) },
+            { x: toSvgX(qFixed), y: toSvgY(pSupplyAtQ) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(qFixed), toSvgY(0));
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(0), yFixed);
+        dashedLabelWithSubscript(toSvgX(qFixed), toSvgY(0)+20, "Q", "", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixed, "P", "Quota", "end", 0, 20, 12);
+
+    }
+
+    else if (fixedPriceEnabled && producerTaxEnabled) {
+        // Ligne de la supply taxée
+        line(t1, t2, "#f59e0b");
+        const yFixed = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+        // Quantité côté supply taxée et prix fixe
+        const qTaxSupply = (fixedPrice - producerTax.intercept) / producerTax.slope;
+        // Quantité côté demande et prix fixe
+        const qDemandFixed = (fixedPrice - demand.intercept) / demand.slope;
+        // Bornage dans les limites du graphique
+        const qTaxSupplyBounded = Math.max(0, Math.min(100, qTaxSupply));
+        const qDemandBounded = Math.max(0, Math.min(100, qDemandFixed));
+        // Quantité échangée = minimum entre les deux intersections
+        const qFixed = Math.min(qTaxSupplyBounded, qDemandBounded);
+        // Points d’intersection utiles
+        const pTaxAtQ = producerTax.intercept + producerTax.slope * qFixed;
+        const pSupplyAtQ = supply.intercept + supply.slope * qFixed;
+        const pFixedDemand = demand.intercept + demand.slope * qFixed;
+
+        // Polygone Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // Polygone Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pTaxAtQ) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // Government Revenue (zone entre la taxe et l'offre)
+        const governmentArea = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(producerTax.intercept + producerTax.slope * qFixed) },
+            { x: toSvgX(qFixed), y: toSvgY(supply.intercept + supply.slope * qFixed) }
+        ];
+        const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+        g.appendChild(polygon(governmentArea, governmentColor));
+
+        // Deadweight Loss (entre qFixed et équilibre taxe)
+        const dwl = [
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+            { x: toSvgX(qFixed), y: toSvgY(pSupplyAtQ) }
+        ];
+        g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+
+        // Consumer Rent (zone entre la demande et le prix fixe, jusqu'à Q_fixed)
+        const consumerRent = [
+            { x: toSvgX(0), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        // Producer Rent (zone entre le prix fixe et l'offre taxée, jusqu'à Q_fixed)
+        const producerRent = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(pTaxAtQ) },
+            { x: toSvgX(qFixed), y: toSvgY(pTaxAtQ) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+
+        // Lignes pointillées
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(qFixed), toSvgY(0));
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(0), yFixed);
+
+        // Labels
+        dashedLabelWithSubscript(toSvgX(qFixed), toSvgY(0) + 20, "Q", "", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixed, "P", "Quota", "end", 0, 20, 12);
+
+    }
+
+    
+    else if (producerTaxEnabled) {
+        line(t1, t2, "#f59e0b");
+        const taxEq = intersection(d1, d2, t1, t2);
+        if (taxEq) {
+            // Polygones pour Consumer Surplus et Producer Surplus
+            const cs = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            const ps = [
+                { x: toSvgX(0), y: toSvgY(taxEq.p) },
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) }
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            // Deadweight Loss
+            const dwl = [
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(eq.q), y: toSvgY(supply.intercept + supply.slope * eq.q) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            // Government Revenue (zone entre la taxe et l'offre)
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(producerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(supply.intercept + supply.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) }
+            ];
+            const governmentColor = (producerTax.intercept > supply.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+            // Calcul des ordonnées P_non tax et P_tax
+            const pNonTax = supply.intercept + supply.slope * taxEq.q;
+            const pTax = taxEq.p;
+            const highestP = Math.max(pNonTax, pTax);
+            // Ligne verticale de Q_Tax jusqu'à la plus haute ordonnée
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(highestP));
+            // Ligne horizontale et label P_non tax
+            dashedLine(toSvgX(0), toSvgY(pNonTax), toSvgX(taxEq.q), toSvgY(pNonTax));
+            dashedLabelWithSubscript(
+                M.left - 25,
+                toSvgY(pNonTax), "P", "Supply", "end", 0, 20, 12);
+            // Ligne horizontale et label P_tax
+            dashedLine(toSvgX(0), toSvgY(pTax), toSvgX(taxEq.q), toSvgY(pTax));
+            dashedLabelWithSubscript(M.left - 25, toSvgY(pTax), "P", "Demand","end", 0, 20, 12);
+            // Label Q_Tax
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+        }
+    }
+    else if (consumerTaxEnabled) {
+        line(ct1, ct2, "#f59e0b");
+        const taxEq = intersection(ct1, ct2, s1, s2);
+        if(taxEq) {
+            // Polygones pour Consumer Surplus et Producer Surplus
+            const cs = [
+                {x: toSvgX(0), y: toSvgY(taxEq.p)},
+                {x: toSvgX(0), y: toSvgY(consumerTax.intercept)},
+                {x: toSvgX(taxEq.q), y: toSvgY(taxEq.p)}
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            const ps = [
+                {x: toSvgX(0), y: toSvgY(taxEq.p)},
+                {x: toSvgX(0), y: toSvgY(supply.intercept)},
+                {x: toSvgX(taxEq.q), y: toSvgY(taxEq.p)}
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            // Deadweight Loss
+            const dwl = [
+                {x: toSvgX(taxEq.q), y: toSvgY(taxEq.p)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)},
+                {x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q)}
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            // Government Revenue/Expense
+            // Government Revenue (zone entre la taxe et la demande)
+            const governmentArea = [
+                { x: toSvgX(0), y: toSvgY(consumerTax.intercept) },
+                { x: toSvgX(taxEq.q), y: toSvgY(taxEq.p) },
+                { x: toSvgX(taxEq.q), y: toSvgY(demand.intercept + demand.slope * taxEq.q) },
+                { x: toSvgX(0), y: toSvgY(demand.intercept) }
+            ];
+            const governmentColor = (consumerTax.intercept < demand.intercept) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+            // Calcul des ordonnées P_non tax et P_tax
+            const pNonTax = demand.intercept + demand.slope * taxEq.q;
+            const pTax = taxEq.p;
+            const highestP = Math.max(pNonTax, pTax);
+            // Ligne verticale de Q_Tax jusqu'à la plus haute ordonnée
+            dashedLine(toSvgX(taxEq.q), toSvgY(0), toSvgX(taxEq.q), toSvgY(highestP));
+            // Ligne horizontale et label P_non tax
+            dashedLine(toSvgX(0), toSvgY(pNonTax), toSvgX(taxEq.q), toSvgY(pNonTax));
+            dashedLabelWithSubscript( M.left - 25, toSvgY(pNonTax), "P", "Demand", "end", 0, 20, 12);
+            // Ligne horizontale et label P_tax
+            dashedLine(toSvgX(0), toSvgY(pTax), toSvgX(taxEq.q), toSvgY(pTax));
+            dashedLabelWithSubscript(
+                M.left - 25, toSvgY(pTax), "P", "Supply", "end", 0, 20, 12);
+            // Label Q_Tax
+            dashedLabelWithSubscript(toSvgX(taxEq.q), toSvgY(0)+20, "Q", "Tax", "middle", 0, 20, 12);
+        }
+    }
+
+    else if (fixedPriceAboveEnabled) {
+        // Dessiner la courbe d'externalité du producteur (si activée)
+        if (producerExternalityEnabled) {
+            const e1 = { q: 0, p: producerExternality.intercept };
+            const e2 = { q: 100, p: producerExternality.intercept + producerExternality.slope * 100 };
+            line(e1, e2, "#f97316");
+        }
+
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixedAbove = addFixedPriceDot(g, fixedPriceAbove, "#f97316");
+
+        // Calculer Q_demand et Q_supply pour P_quota
+        let q_demand = (fixedPriceAbove - demand.intercept) / demand.slope;
+        let q_supply = (fixedPriceAbove - supply.intercept) / supply.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const q_fixed = Math.max(q_demand, q_supply);
+
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * q_fixed;
+        const pFixedDemand = demand.intercept + demand.slope * q_fixed;
+
+        // Consumer Surplus
+        const cs_fixed = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(q_demand), y: yFixedAbove }
+        ];
+        g.appendChild(polygon(cs_fixed, "url(#pattern-cs)"));
+
+        // Producer Surplus
+        const ps_fixed = [
+            { x: toSvgX(0), y: yFixedAbove },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_supply), y: toSvgY(supply.intercept + supply.slope * q_supply) }
+        ];
+        g.appendChild(polygon(ps_fixed, "url(#pattern-ps)"));
+
+        if (fixedPriceAbove > eq.p) {
+            // Consumer Loss (condition originale)
+            const consumerLoss = [
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(demand.intercept + demand.slope * q_fixed) },
+                { x: toSvgX(q_demand), y: yFixedAbove }
+            ];
+            g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+
+            // Deadweight Loss (condition originale)
+            const dwl = [
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(demand.intercept + demand.slope * q_fixed) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+        
+            const producerRent = [
+                { x: toSvgX(0), y: toSvgY(pFixedDemand) },       // P obtenu de l'intersection demande à Q_quota avec l'axe des ordonnées
+                { x: toSvgX(0), y: yFixedAbove },               // P_quota sur l'axe des ordonnées
+                { x: toSvgX(q_fixed), y: yFixedAbove },         // Point (Q_quota, P_quota)
+                { x: toSvgX(q_fixed), y: toSvgY(pFixedDemand) } // Intersection demande à Q_quota
+            ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+        }
+        else if (fixedPriceAbove < eq.p) {
+            // Producer Loss (condition originale)
+            const producerLoss = [
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(supply.intercept + supply.slope * q_fixed) },
+                { x: toSvgX(q_supply), y: toSvgY(supply.intercept + supply.slope * q_supply) }
+            ];
+            g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+
+            // Deadweight Loss (condition originale)
+            const dwl = [
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(supply.intercept + supply.slope * q_fixed) }
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+        
+            const consumerRent = [
+                { x: toSvgX(0), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: yFixedAbove },
+                { x: toSvgX(q_fixed), y: toSvgY(supply.intercept + supply.slope * q_fixed) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept + supply.slope * q_fixed) }
+
+            // Intersection demande à Q_quota
+            ];
+            g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        }
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(q_fixed), toSvgY(0));
+        dashedLine(toSvgX(q_fixed), yFixedAbove, toSvgX(0), yFixedAbove);
+        dashedLabelWithSubscript(toSvgX(q_fixed), toSvgY(0) + 20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixedAbove, "P", "Quota", "end", 0, 20, 12);
+    }
+
+    else if (fixedPriceEnabled) {
+        // Ajouter le point de prix fixe (P_quota)
+        const yFixed = addFixedPriceDot(g, fixedPrice, "#f59e0b");
+        // Calculer Q_quota en fonction de la position de P_quota par rapport à P*
+        let q_demand = (fixedPrice - demand.intercept) / demand.slope;
+        let q_supply = (fixedPrice - supply.intercept) / supply.slope;
+        q_demand = Math.max(0, Math.min(100, q_demand));
+        q_supply = Math.max(0, Math.min(100, q_supply));
+        const qFixed = Math.min(q_demand, q_supply);
+
+        // Calculer les points sur les courbes pour Q = Q_quota
+        const pFixedSupply = supply.intercept + supply.slope * qFixed;
+        const pFixedDemand = demand.intercept + demand.slope * qFixed;
+
+        // Consumer Rent
+        const consumerRent = [
+            { x: toSvgX(0), y: toSvgY(pFixedDemand) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(consumerRent, "rgba(59, 130, 246, 0.4)"));
+
+        // Producer Rent (modifié selon vos consignes)
+        const producerRent = [
+            { x: toSvgX(0), y: yFixed },                     // P_quota sur l'axe des ordonnées
+            { x: toSvgX(0), y: toSvgY(pFixedSupply) },       // Intersection de la droite de supply à Q_quota avec l'axe des ordonnées
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },  // Point (Q_quota, prix sur la supply)
+            { x: toSvgX(qFixed), y: yFixed }                // Point (Q_quota, P_quota)
+        ];
+        g.appendChild(polygon(producerRent, "rgba(34, 197, 94, 0.4)"));
+
+        // Consumer Surplus
+        const cs = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(qFixed), y: yFixed },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+
+        // Producer Surplus
+        const ps = [
+            { x: toSvgX(0), y: yFixed },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+            { x: toSvgX(qFixed), y: yFixed }
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+
+        // Deadweight Loss (si P_quota ≠ P*)
+        const noExchange = (fixedPrice > eq.p && qFixed <= 0) || (fixedPrice < eq.p && qFixed <= 0) ||
+                        (fixedPrice > demand.intercept) || (fixedPrice < supply.intercept);
+        if (noExchange) {
+            const dwlComplete = [
+                { x: toSvgX(0), y: toSvgY(demand.intercept) },
+                { x: toSvgX(0), y: toSvgY(supply.intercept) },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) }
+            ];
+            g.appendChild(polygon(dwlComplete, "rgba(239, 68, 68, 0.4)"));
+        } else if (fixedPrice > eq.p) {
+            // Consumer Loss (si P_quota > P*)
+            const consumerLoss = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) }
+            ];
+            g.appendChild(polygon(consumerLoss, "url(#pattern-consumer-loss)"));
+
+            // Deadweight Loss (DWL)
+            const dwl1 = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+            ];
+            const dwl2 = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        } else {
+            // Producer Loss (si P_quota < P*)
+            const producerLoss = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) }
+            ];
+            g.appendChild(polygon(producerLoss, "url(#pattern-producer-loss)"));
+
+            // Deadweight Loss (DWL)
+            const dwl1 = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedDemand) }
+            ];
+            const dwl2 = [
+                { x: toSvgX(qFixed), y: yFixed },
+                { x: toSvgX(eq.q), y: toSvgY(eq.p) },
+                { x: toSvgX(qFixed), y: toSvgY(pFixedSupply) }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(qFixed), toSvgY(0));
+        dashedLine(toSvgX(qFixed), yFixed, toSvgX(0), yFixed);
+        dashedLabelWithSubscript(toSvgX(qFixed), toSvgY(0) + 20, "Q", "Quota", "middle", 0, 20, 12);
+        dashedLabelWithSubscript(M.left - 25, yFixed, "P", "Quota", "end", 0, 20, 12);
+    }
+
+
+
+
+    else if (openMarketEnabled && consumerExternalityEnabled) {
+        // Dessiner la courbe d'externalité du consommateur
+        line(c1, c2, "#f97316");
+
+        // Ajouter la ligne du prix global et du tarif
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // Calculer les quantités d'équilibre avec le tarif et le prix global
+        const q_consumers = (tariff - demand.intercept) / demand.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+
+        // Calculer les quantités d'équilibre avec le prix global
+        const q_supply_at_global_price = (globalMarketPrice - supply.intercept) / supply.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+        const q_demand_at_global_price = (globalMarketPrice - demand.intercept) / demand.slope;
+        const q_demand_global = Math.max(0, Math.min(100, q_demand_at_global_price));
+
+        // Calculer les points sur les courbes pour Q = Q_consumer_final et Q = Q_producer_final
+        const p_consumer_final = demand.intercept + demand.slope * q_consumer_final;
+        const p_producer_final = supply.intercept + supply.slope * q_producer_final;
+        const p_externality_final = consumerExternality.intercept + consumerExternality.slope * q_consumer_final;
+
+        // Consumer Surplus (avec tarif)
+        const cs_open = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(q_consumer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+        // Producer Surplus (avec tarif)
+        const ps_open = [
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_producer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // Consumer Externality (zone entre la demande et l'externalité)
+        const consumerext = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: toSvgY(consumerExternality.intercept) },
+            { x: toSvgX(q_consumer_final), y: toSvgY(p_externality_final) },
+            { x: toSvgX(q_consumer_final), y: toSvgY(p_consumer_final) }
+        ];
+        g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+
+        // Deadweight Loss (DWL) due à l'externalité et au tarif
+        const q_intersection_consumer_externality_global = (globalMarketPrice - consumerExternality.intercept) / consumerExternality.slope;
+        const dwlPoints = [
+            { x: toSvgX(q_consumer_final), y: yTariff },
+            { x: toSvgX(q_intersection_consumer_externality_global), y: yGlobal },
+            { x: toSvgX(q_consumer_final), y: toSvgY(p_externality_final) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+
+        if (globalMarketPrice <= eq.p && tariff <= eq.p) {
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        } else if (globalMarketPrice >= eq.p && tariff >= eq.p) {
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        if (tariff !== globalMarketPrice && q_producer_final !== q_consumer_final) {
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+
+            // Logique corrigée pour la couleur de la zone Gouvernement
+            let governmentColor;
+            if (tariff > eq.p) {
+                // Au-dessus de P*
+                governmentColor = (tariff > globalMarketPrice) ? "rgba(139, 69, 19, 0.6)" : "rgba(255, 215, 0, 0.6)";
+            } else {
+                // En dessous de P*
+                governmentColor = (tariff > globalMarketPrice) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            }
+
+            g.appendChild(polygon(governmentArea, governmentColor));
+        }
+
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+        dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+        dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+
+
+        // Calcul de la quantité sociale (intersection de consumerExternality et PGlobal)
+        const q_social = (globalMarketPrice - consumerExternality.intercept) / consumerExternality.slope;
+        const q_social_final = Math.max(0, Math.min(100, q_social));
+
+        // Ligne verticale en pointillés pour Q Social
+        dashedLine(toSvgX(q_social_final), yGlobal, toSvgX(q_social_final), toSvgY(0));
+
+        // Label "Q Social" au niveau de l'abscisse
+        dashedLabelWithSubscript(toSvgX(q_social_final), toSvgY(0) + 20, "Q", "Social", "middle", 0, 20, 14);
+
+
+        // Légende externalité consommateur
+        if (consumerExternality.intercept > demand.intercept) {
+            consumerExternalityLegendText.textContent = "Consumer Externality (benefit)";
+        } else {
+            consumerExternalityLegendText.textContent = "Consumer Externality (cost)";
+        }
+    }
+
+
+
+    else if (openMarketEnabled && producerExternalityEnabled) {
+        // Dessiner la courbe d'externalité du producteur
+        line(e1, e2, "#f97316");
+
+        // Ajouter les lignes pour le prix global et le tarif
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+
+        // Calculer les quantités d'équilibre avec le tarif
+        const q_consumers = (tariff - demand.intercept) / demand.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+
+        // Calculer les quantités d'équilibre avec le prix global
+        const q_supply_at_global_price = (globalMarketPrice - supply.intercept) / supply.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+        const q_demand_at_global_price = (globalMarketPrice - demand.intercept) / demand.slope;
+        const q_demand_global = Math.max(0, Math.min(100, q_demand_at_global_price));
+
+        // Calculer les points sur les courbes
+        const p_consumer_final = demand.intercept + demand.slope * q_consumer_final;
+        const p_producer_final = supply.intercept + supply.slope * q_producer_final;
+        const p_externality_final = producerExternality.intercept + producerExternality.slope * q_producer_final;
+
+        // Consumer Surplus (avec tarif)
+        const cs_open = [
+            { x: toSvgX(0), y: toSvgY(demand.intercept) },
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(q_consumer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+
+        // Producer Surplus (avec tarif)
+        const ps_open = [
+            { x: toSvgX(0), y: yTariff },
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(q_producer_final), y: yTariff }
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+
+        // Producer Externality (zone entre supply et externality)
+        const producerext = [
+            { x: toSvgX(0), y: toSvgY(supply.intercept) },
+            { x: toSvgX(0), y: toSvgY(producerExternality.intercept) },
+            { x: toSvgX(q_producer_final), y: toSvgY(p_externality_final) },
+            { x: toSvgX(q_producer_final), y: toSvgY(p_producer_final) }
+        ];
+        g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+
+        // Calcul intersection global price et externality
+        const q_global_externality = (globalMarketPrice - producerExternality.intercept) / producerExternality.slope;
+        const y_global_externality = toSvgY(globalMarketPrice);
+        const x_global_externality = toSvgX(q_global_externality);
+
+        // === TRIANGLES DWL ===
+
+        // Mettre à jour dwlPoints
+        const dwlPoints = [
+            { x: toSvgX(q_producer_final), y: yTariff },
+            { x: x_global_externality, y: y_global_externality },
+            { x: toSvgX(q_producer_final), y: toSvgY(p_externality_final) }
+        ];
+        g.appendChild(polygon(dwlPoints, "rgba(239, 68, 68, 0.4)"));
+
+
+        if (globalMarketPrice <= eq.p && tariff <= eq.p) {
+            // Sous P*
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        if (globalMarketPrice >= eq.p && tariff >= eq.p) {
+            // Au-dessus de P*
+            const dwl1 = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_supply_global), y: yGlobal },
+                { x: toSvgX(q_producer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+
+            const dwl2 = [
+                { x: toSvgX(q_consumer_final), y: yTariff },
+                { x: toSvgX(q_demand_global), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal }
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+        }
+
+        // === Zone Gouvernement ===
+        if (tariff !== globalMarketPrice && q_producer_final !== q_consumer_final) {
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+
+            let governmentColor;
+            if (tariff > eq.p) {
+                // Au-dessus de P*
+                governmentColor = (tariff > globalMarketPrice)
+                    ? "rgba(139, 69, 19, 0.6)"
+                    : "rgba(255, 215, 0, 0.6)";
+            } else {
+                // En dessous de P*
+                governmentColor = (tariff > globalMarketPrice)
+                    ? "rgba(255, 215, 0, 0.6)"
+                    : "rgba(139, 69, 19, 0.6)";
+            }
+            g.appendChild(polygon(governmentArea, governmentColor));
+        }
+
+        // Légende externalité producteur
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+
+        // Lignes pointillées et labels
+        dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+        dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+        dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0) + 20, "Q", "Consumed", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0) + 20, "Q", "Produced", "middle", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+
+        // Ligne verticale pour Q_social
+        dashedLine(x_global_externality, y_global_externality, x_global_externality, toSvgY(0));
+        dashedLabelWithSubscript(x_global_externality, toSvgY(0) + 20, "Q", "Social", "middle", 0, 20, 14);
+    }
+
+
+
+
+    else if(openMarketEnabled) {
+        const yGlobal = addGlobalMarketPriceLine(g);
+        const yTariff = addTariffLine(g, eq);
+        const q_consumers = (tariff - demand.intercept) / demand.slope;
+        const q_producers = (tariff - supply.intercept) / supply.slope;
+        const q_consumer_final = Math.max(0, Math.min(100, q_consumers));
+        const q_producer_final = Math.max(0, Math.min(100, q_producers));
+        const q_supply_at_global_price = (globalMarketPrice - supply.intercept) / supply.slope;
+        const q_supply_global = Math.max(0, Math.min(100, q_supply_at_global_price));
+        const q_demand_at_global_price = (globalMarketPrice - demand.intercept) / demand.slope;
+        const q_demand_global = Math.max(0, Math.min(100, q_demand_at_global_price));
+        const cs_open = [
+            {x: toSvgX(0), y: toSvgY(demand.intercept)},
+            {x: toSvgX(0), y: yTariff},
+            {x: toSvgX(q_consumer_final), y: yTariff}
+        ];
+        g.appendChild(polygon(cs_open, "url(#pattern-cs)"));
+        const ps_open = [
+            {x: toSvgX(0), y: yTariff},
+            {x: toSvgX(0), y: toSvgY(supply.intercept)},
+            {x: toSvgX(q_producer_final), y: yTariff}
+        ];
+        g.appendChild(polygon(ps_open, "url(#pattern-ps)"));
+        if (q_consumer_final > 0) {
+            dashedLine(toSvgX(q_consumer_final), yTariff, toSvgX(q_consumer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_consumer_final), toSvgY(0)+20, "Q", "Consumed", "middle", 0, 20, 14);
+        }
+        if (q_producer_final > 0) {
+            dashedLine(toSvgX(q_producer_final), yTariff, toSvgX(q_producer_final), toSvgY(0));
+            dashedLabelWithSubscript(toSvgX(q_producer_final), toSvgY(0)+20, "Q", "Produced", "middle", 0, 20, 14);
+        }
+        dashedLabelWithSubscript(M.left - 25, yGlobal, "P", "Global", "end", 0, 20, 14);
+        dashedLabelWithSubscript(M.left - 25, yTariff, "Tariff", "", "end", 0, 20, 14);
+        if (q_consumer_final !== q_producer_final) {
+            if (q_consumer_final > q_producer_final) {
+                const importText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                importText.setAttribute("x", toSvgX((q_consumer_final + q_producer_final)/2));
+                importText.setAttribute("y", yTariff + 30);
+                importText.setAttribute("text-anchor", "middle");
+                importText.setAttribute("font-size", "16");
+                importText.setAttribute("fill", "#2563eb");
+                importText.textContent = "Import";
+                g.appendChild(importText);
+            } else if (q_producer_final > q_consumer_final) {
+                const exportText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                exportText.setAttribute("x", toSvgX((q_consumer_final + q_producer_final)/2));
+                exportText.setAttribute("y", yTariff - 30);
+                exportText.setAttribute("text-anchor", "middle");
+                exportText.setAttribute("font-size", "16");
+                exportText.setAttribute("fill", "#16a34a");
+                exportText.textContent = "Export";
+                g.appendChild(exportText);
+            }
+        }
+        if (globalMarketPrice <= eq.p && tariff <= eq.p) {
+            const dwl1 = [
+                {x: toSvgX(q_producer_final), y: yTariff},
+                {x: toSvgX(q_supply_global), y: yGlobal},
+                {x: toSvgX(q_producer_final), y: yGlobal}
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            const dwl2 = [
+                {x: toSvgX(q_consumer_final), y: yTariff},
+                {x: toSvgX(q_demand_global), y: yGlobal},
+                {x: toSvgX(q_consumer_final), y: yGlobal}
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+            const governmentColor = (tariff > globalMarketPrice) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+        }
+        if (globalMarketPrice >= eq.p && tariff >= eq.p) {
+            const dwl1 = [
+                {x: toSvgX(q_producer_final), y: yTariff},
+                {x: toSvgX(q_supply_global), y: yGlobal},
+                {x: toSvgX(q_producer_final), y: yGlobal}
+            ];
+            g.appendChild(polygon(dwl1, "rgba(239, 68, 68, 0.4)"));
+            const dwl2 = [
+                {x: toSvgX(q_consumer_final), y: yTariff},
+                {x: toSvgX(q_demand_global), y: yGlobal},
+                {x: toSvgX(q_consumer_final), y: yGlobal}
+            ];
+            g.appendChild(polygon(dwl2, "rgba(239, 68, 68, 0.4)"));
+            // Government Revenue (zone entre le tarif et le prix global)
+            const governmentArea = [
+                { x: toSvgX(q_producer_final), y: yTariff },
+                { x: toSvgX(q_producer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yGlobal },
+                { x: toSvgX(q_consumer_final), y: yTariff }
+            ];
+            const governmentColor = (tariff < globalMarketPrice) ? "rgba(255, 215, 0, 0.6)" : "rgba(139, 69, 19, 0.6)";
+            g.appendChild(polygon(governmentArea, governmentColor));
+
+        }
+    }
+
+
+
+
+
+
+    else if(producerExternalityEnabled) {
+        line(e1, e2, "#f97316");
+        const externalityOptimum = intersection(d1, d2, e1, e2);
+        if(externalityOptimum) {
+            const cs = [
+                {x: toSvgX(0), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(demand.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            const ps = [
+                {x: toSvgX(0), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(supply.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            const externalityAtEqQ = producerExternality.intercept + producerExternality.slope * eq.q;
+            const dwl = [
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)},
+                {x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p)},
+                {x: toSvgX(eq.q), y: toSvgY(externalityAtEqQ)}
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            const producerext = [
+                {x: toSvgX(0), y: toSvgY(producerExternality.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(externalityAtEqQ)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(supply.intercept)}
+            ];
+            g.appendChild(polygon(producerext, "url(#pattern-producer-externality)"));
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        if (producerExternality.intercept < supply.intercept) {
+            producerExternalityLegendText.textContent = "Producer Externality (benefit)";
+        } else {
+            producerExternalityLegendText.textContent = "Producer Externality (cost)";
+        }
+    }
+    else if(consumerExternalityEnabled) {
+        line(c1, c2, "#f97316");
+        const externalityOptimum = intersection(c1, c2, s1, s2);
+        if(externalityOptimum) {
+            const cs = [
+                {x: toSvgX(0), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(demand.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+            ];
+            g.appendChild(polygon(cs, "url(#pattern-cs)"));
+            const ps = [
+                {x: toSvgX(0), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(supply.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+            ];
+            g.appendChild(polygon(ps, "url(#pattern-ps)"));
+            const externalityAtEqQ = consumerExternality.intercept + consumerExternality.slope * eq.q;
+            const dwl = [
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)},
+                {x: toSvgX(externalityOptimum.q), y: toSvgY(externalityOptimum.p)},
+                {x: toSvgX(eq.q), y: toSvgY(externalityAtEqQ)}
+            ];
+            g.appendChild(polygon(dwl, "rgba(239, 68, 68, 0.4)"));
+            const consumerext = [
+                {x: toSvgX(0), y: toSvgY(consumerExternality.intercept)},
+                {x: toSvgX(eq.q), y: toSvgY(externalityAtEqQ)},
+                {x: toSvgX(eq.q), y: toSvgY(eq.p)},
+                {x: toSvgX(0), y: toSvgY(demand.intercept)}
+            ];
+            g.appendChild(polygon(consumerext, "url(#pattern-consumer-externality)"));
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", toSvgX(externalityOptimum.q));
+            c.setAttribute("cy", toSvgY(externalityOptimum.p));
+            c.setAttribute("r", 6);
+            c.setAttribute("fill", "#16a34a");
+            g.appendChild(c);
+            const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lbl.setAttribute("x", toSvgX(externalityOptimum.q));
+            lbl.setAttribute("y", toSvgY(externalityOptimum.p)-25);
+            lbl.setAttribute("text-anchor", "middle");
+            lbl.setAttribute("font-size", "20");
+            lbl.setAttribute("font-weight", "bold");
+            lbl.setAttribute("fill", "#16a34a");
+            lbl.classList.add("no-select");
+            lbl.textContent = "S*";
+            g.appendChild(lbl);
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(externalityOptimum.q), toSvgY(0));
+            dashedLine(toSvgX(externalityOptimum.q), toSvgY(externalityOptimum.p), toSvgX(0), toSvgY(externalityOptimum.p));
+            dashedLabelWithSubscript(toSvgX(externalityOptimum.q), toSvgY(0)+20, "Q", "Social", "middle", 0, 20, 12);
+            dashedLabelWithSubscript(M.left - 25, toSvgY(externalityOptimum.p), "P", "Social", "end", 0, 20, 12);
+        }
+        if (consumerExternality.intercept > demand.intercept) {
+            consumerExternalityLegendText.textContent = "Consumer Externality (benefit)";
+        } else {
+            consumerExternalityLegendText.textContent = "Consumer Externality (cost)";
+        }
+    }
+    else {
+        const cs = [
+            {x: toSvgX(0), y: toSvgY(eq.p)},
+            {x: toSvgX(0), y: toSvgY(demand.intercept)},
+            {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+        ];
+        g.appendChild(polygon(cs, "url(#pattern-cs)"));
+        const ps = [
+            {x: toSvgX(0), y: toSvgY(eq.p)},
+            {x: toSvgX(0), y: toSvgY(supply.intercept)},
+            {x: toSvgX(eq.q), y: toSvgY(eq.p)}
+        ];
+        g.appendChild(polygon(ps, "url(#pattern-ps)"));
+    }
+    const cx = toSvgX(eq.q), cy = toSvgY(eq.p);
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    c.setAttribute("cx", cx);
+    c.setAttribute("cy", cy);
+    c.setAttribute("r", 6);
+    c.setAttribute("fill", "#ef4444");
+    g.appendChild(c);
+    const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    lbl.setAttribute("x", cx);
+    lbl.setAttribute("y", cy-25);
+    lbl.setAttribute("text-anchor", "middle");
+    lbl.setAttribute("font-size", "20");
+    lbl.setAttribute("font-weight", "bold");
+    lbl.setAttribute("fill", "#ef4444");
+    lbl.classList.add("no-select");
+    lbl.textContent = "E*";
+    g.appendChild(lbl);
+    dashedLine(cx, cy, cx, toSvgY(0));
+    dashedLine(cx, cy, toSvgX(0), cy);
+    dashedLabel(toSvgX(0)-5, cy, "P*", "end");
+    dashedLabel(cx, toSvgY(0)+20, "Q*", "middle");
+    addDraggableDot(toSvgX(0), toSvgY(demand.intercept), "#60a5fa", "demand", g);
+    addDraggableDot(toSvgX(0), toSvgY(supply.intercept), "#34d399", "supply", g);
+    if(producerExternalityEnabled) {
+        addDraggableDot(toSvgX(0), toSvgY(producerExternality.intercept), "#f97316", "producerExternality", g);
+    }
+    if(consumerExternalityEnabled) {
+        addDraggableDot(toSvgX(0), toSvgY(consumerExternality.intercept), "#f97316", "consumerExternality", g);
+    }
+    if(producerTaxEnabled) {
+        addDraggableDot(toSvgX(0), toSvgY(producerTax.intercept), "#f59e0b", "producerTax", g);
+    }
+    if(consumerTaxEnabled) {
+        addDraggableDot(toSvgX(0), toSvgY(consumerTax.intercept), "#f59e0b", "consumerTax", g);
+    }
+}
+drawAxes();
+render();
+</script>
+</body>
+</html>
